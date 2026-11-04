@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Entraînement · Bienvenue chez les fous</title>
+<meta name="description" content="Simulation de combat guidée : choisissez une classe et apprenez à jouer un combat contre des infectés.">
+<meta name="theme-color" content="#060404">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23060404'/%3E%3Cpath d='M16 4c4 7 7 10 7 14a7 7 0 0 1-14 0c0-4 3-7 7-14z' fill='%23b3121a'/%3E%3C/svg%3E">
+<script>document.documentElement.className='js';setTimeout(function(){document.documentElement.classList.add('is-ready')},5000);</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Rubik+Wet+Paint&family=Saira+Stencil+One&family=Share+Tech+Mono&display=swap">
+<link rel="stylesheet" href="assets/css/main.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script type="module" src="assets/js/combat.js"></script>
+</head>
+<body class="page-sim">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <filter id="erode"><feTurbulence type="fractalNoise" baseFrequency=".04" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="6" xChannelSelector="R" yChannelSelector="G"/></filter>
+</svg>
+
+<canvas id="world" class="world" aria-hidden="true"></canvas>
+<div class="shade" aria-hidden="true"></div>
+
+<header class="hud">
+  <a class="hud-brand" href="index.html"><span class="hud-dot"></span>Zone 7 <em>// Bienvenue chez les fous</em></a>
+  <div class="hud-right">
+    <button class="hud-btn hud-sound" type="button" data-sound-toggle aria-pressed="false" aria-label="Son"><span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="hud-sound-label hud-label">Muet</span></button>
+    <button class="hud-btn hud-menu" type="button" aria-expanded="false" aria-controls="menu"><span class="hud-label">Menu</span><span class="burger" aria-hidden="true"></span></button>
+  </div>
+</header>
+<nav class="menu" id="menu" aria-label="Pages">
+  <ol>
+    <li><a href="index.html">La zone <small>Accueil</small></a></li>
+    <li><a href="histoire.html">L'histoire <small>Le synopsis</small></a></li>
+    <li><a href="personnage.html">Votre survivant <small>Classes et inscription</small></a></li>
+    <li><a href="entrainement.html" aria-current="page">L'entraînement <small>Simulation de combat</small></a></li>
+  </ol>
+  <p class="menu-foot">Une campagne de jeu de rôle · 2039</p>
+</nav>
+
+<main class="sim">
+  <!-- 1. Choix de la classe -->
+  <section class="wrap sim-pick" id="pick">
+    <div class="sim-hero">
+      <p class="kicker">Protocole d'entraînement · Niveau 1</p>
+      <h1 class="title" id="title" aria-label="Simulation de combat">
+        <span class="t-line glitch" aria-hidden="true">Simulation</span>
+        <span class="t-line glitch" aria-hidden="true">de combat</span>
+      </h1>
+      <p class="p-lede">Avant le vrai, un exercice. Choisissez une classe : le Capitaine Trevor vous guide pas à pas dans un combat contre deux infectés.</p>
+    </div>
+
+    <h2 class="sim-h">Les bases en 30 secondes</h2>
+    <ol class="basics">
+      <li>
+        <span class="basic-n">01</span>
+        <strong>Le d20</strong>
+        <p>Pour réussir une action, on lance un dé à 20 faces et on ajoute son modificateur (Force, Dextérité…).</p>
+      </li>
+      <li>
+        <span class="basic-n">02</span>
+        <strong>La CA</strong>
+        <p>La classe d'armure. Pour toucher, il faut que le total du d20 atteigne ou dépasse la CA de la cible.</p>
+      </li>
+      <li>
+        <span class="basic-n">03</span>
+        <strong>Les dégâts</strong>
+        <p>Si on touche, on lance le dé de l'arme (1d4, 1d6…) et on retire le résultat aux PV de la cible.</p>
+      </li>
+      <li>
+        <span class="basic-n">04</span>
+        <strong>La fatigue</strong>
+        <p>Les compétences coûtent de la fatigue. À 3, on est à bout. Un repos court en rend 1.</p>
+      </li>
+    </ol>
+
+    <h2 class="sim-h">Choisissez votre classe</h2>
+    <div class="pick-grid" id="pick-grid"></div>
+  </section>
+
+  <!-- 2. Le combat -->
+  <section class="sim-arena" id="arena" hidden aria-label="Combat">
+    <div class="coach" id="coach">
+      <div class="coach-head mono"><span><span class="rec"></span>Canal 7 · Capt. Trevor</span><button class="coach-toggle" id="guide-toggle" type="button" aria-pressed="true">Conseils : activés</button></div>
+      <p class="coach-text" id="coach-text" aria-live="polite"></p>
+      <button class="btn btn--blood coach-next" id="coach-next" type="button" hidden>Compris</button>
+    </div>
+
+    <div class="field">
+      <div class="order mono" id="order" aria-label="Ordre du tour"></div>
+      <div class="side side--enemies" id="enemies"></div>
+
+      <div class="tray" id="tray">
+        <div class="die" id="die">
+          <svg viewBox="0 0 100 100" aria-hidden="true"><polygon class="die-shape" id="die-shape" points="50,4 92,28 92,72 50,96 8,72 8,28"/></svg>
+          <span class="die-num" id="die-num">20</span>
+          <span class="die-type" id="die-type">d20</span>
+        </div>
+        <div class="tray-text" aria-live="polite">
+          <p class="tray-label" id="tray-label">En attente du contact</p>
+          <p class="tray-formula" id="tray-formula"></p>
+          <p class="tray-verdict" id="tray-verdict"></p>
+          <p class="tray-alt" id="die-alt"></p>
+          <button class="btn btn--blood" id="roll-btn" type="button" hidden>Lancer le d20</button>
+        </div>
+      </div>
+
+      <div class="side side--allies" id="allies"></div>
+    </div>
+
+    <div class="bar" id="bar">
+      <div class="bar-head">
+        <p class="tokens mono" id="tokens"><span class="token" data-token="action">Action</span><span class="token" data-token="bonus">Action bonus</span></p>
+        <p class="target-hint mono" id="target-hint"></p>
+        <button class="btn" id="cancel-target" type="button" hidden>Annuler</button>
+      </div>
+      <div class="actions" id="actions"></div>
+      <div class="ask" id="ask" hidden>
+        <p class="ask-title" id="ask-title"></p>
+        <p class="ask-text" id="ask-text"></p>
+        <div class="ask-btns"><button class="btn btn--blood" id="ask-yes" type="button">Oui</button><button class="btn" id="ask-no" type="button">Non</button></div>
+      </div>
+      <button class="btn end-turn" id="end-turn" type="button" disabled>Finir le tour</button>
+    </div>
+
+    <details class="journal" id="journal" open>
+      <summary class="mono">Journal du combat</summary>
+      <ol class="log" id="log"></ol>
+    </details>
+  </section>
+
+  <!-- 3. Le bilan -->
+  <section class="wrap sim-end" id="end" hidden>
+    <p class="kicker" id="end-kicker">Simulation terminée</p>
+    <h2 class="end-title" id="end-title">Zone sécurisée</h2>
+    <p class="end-text" id="end-text"></p>
+    <dl class="end-stats" id="end-stats"></dl>
+    <div class="rest">
+      <div>
+        <p class="sim-h">Après le combat : le repos court</p>
+        <p class="rest-text" id="rest-text">Un repos court fait redescendre la fatigue de 1.</p>
+      </div>
+      <span class="rest-pips" id="rest-pips" aria-hidden="true"><i></i><i></i><i></i></span>
+      <button class="btn" id="rest-btn" type="button">Faire un repos court</button>
+    </div>
+    <div class="end-actions">
+      <button class="btn btn--blood" id="again" type="button">Rejouer avec cette classe</button>
+      <button class="btn" id="change" type="button">Changer de classe</button>
+      <a class="btn" href="personnage.html#inscription">S'inscrire à la campagne</a>
+    </div>
+    <p class="reg-note">Cette simulation complète les règles de la campagne avec des valeurs d'entraînement (rôdeurs, Sam, armes ramassées). Le meneur de jeu a le dernier mot.</p>
+  </section>
+</main>
+
+<div class="grain" aria-hidden="true"></div>
+<div class="scanlines" aria-hidden="true"></div>
+<div class="veil" aria-hidden="true"></div>
+</body>
+</html>
