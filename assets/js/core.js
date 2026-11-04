@@ -122,10 +122,11 @@ function initCursor() {
   el.innerHTML = '<i></i><i></i><i></i><i></i><b></b>';
   document.body.appendChild(el);
   document.documentElement.classList.add('has-reticle');
-  let x = innerWidth / 2, y = innerHeight / 2, tx = x, ty = y;
+  // Le viseur colle au pointeur, sans lissage : il reste caché jusqu'au premier mouvement.
+  el.classList.add('is-gone');
   addEventListener('pointermove', (e) => {
-    tx = e.clientX;
-    ty = e.clientY;
+    el.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
+    el.classList.remove('is-gone');
     const hot = e.target.closest?.('a, button, [role="tab"], input, label');
     el.classList.toggle('is-hot', !!hot);
   }, { passive: true });
@@ -133,11 +134,6 @@ function initCursor() {
   addEventListener('pointerup', () => el.classList.remove('is-down'));
   document.addEventListener('pointerleave', () => el.classList.add('is-gone'));
   document.addEventListener('pointerenter', () => el.classList.remove('is-gone'));
-  gsap.ticker.add(() => {
-    x += (tx - x) * 0.35;
-    y += (ty - y) * 0.35;
-    el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-  });
 }
 
 // ---------- Effets de texte ----------
