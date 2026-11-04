@@ -3,218 +3,145 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Choisissez votre classe parmi les 6 profils du JDR Bienvenue chez les fous, puis créez votre personnage.">
-<meta name="theme-color" content="#0A0606">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A0606'/%3E%3Cpath d='M16 5c4 6 7 9 7 13a7 7 0 0 1-14 0c0-4 3-7 7-13z' fill='%23C8161D'/%3E%3C/svg%3E">
-<title>Créer votre personnage | Bienvenue chez les fous</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&amp;family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Rubik+Wet+Paint&amp;display=swap">
-<link rel="stylesheet" href="style.css">
+<title>Votre survivant · Bienvenue chez les fous</title>
+<meta name="description" content="Les six classes de la campagne, un interrogatoire pour choisir la vôtre et l'inscription des joueurs.">
+<meta name="theme-color" content="#060404">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23060404'/%3E%3Cpath d='M16 4c4 7 7 10 7 14a7 7 0 0 1-14 0c0-4 3-7 7-14z' fill='%23b3121a'/%3E%3C/svg%3E">
+<script>document.documentElement.className='js';setTimeout(function(){document.documentElement.classList.add('is-ready')},5000);</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Rubik+Wet+Paint&family=Saira+Stencil+One&family=Share+Tech+Mono&display=swap">
+<link rel="stylesheet" href="assets/css/main.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script type="module" src="assets/js/perso.js"></script>
 </head>
-<body>
-<header class="bar">
-  <div class="wrap">
-    <a class="brand" href="index.html">Bienvenue chez les fous</a>
-    <nav class="nav" aria-label="Pages">
-      <a href="index.html">Accueil</a>
-      <a href="histoire.html">L'histoire</a>
-      <a href="personnage.html" aria-current="page">Créer votre perso</a>
-    </nav>
-    <a class="btn btn-primary" href="https://docs.google.com/spreadsheets/d/VOTRE_ID_ICI/copy" target="_blank" rel="noopener noreferrer">Ouvrir la feuille</a>
+<body class="page-perso">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <filter id="erode"><feTurbulence type="fractalNoise" baseFrequency=".04" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="6" xChannelSelector="R" yChannelSelector="G"/></filter>
+</svg>
+
+<canvas id="world" class="world" aria-hidden="true"></canvas>
+<div class="shade" aria-hidden="true"></div>
+
+<header class="hud">
+  <a class="hud-brand" href="index.html"><span class="hud-dot"></span>Zone 7 <em>// Bienvenue chez les fous</em></a>
+  <div class="hud-right">
+    <button class="hud-btn hud-sound" type="button" data-sound-toggle aria-pressed="false" aria-label="Son"><span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="hud-sound-label hud-label">Muet</span></button>
+    <button class="hud-btn hud-menu" type="button" aria-expanded="false" aria-controls="menu"><span class="hud-label">Menu</span><span class="burger" aria-hidden="true"></span></button>
   </div>
 </header>
+<nav class="menu" id="menu" aria-label="Pages">
+  <ol>
+    <li><a href="index.html">La zone <small>Accueil</small></a></li>
+    <li><a href="histoire.html">L'histoire <small>Le synopsis</small></a></li>
+    <li><a href="personnage.html" aria-current="page">Votre survivant <small>Classes et inscription</small></a></li>
+  </ol>
+  <p class="menu-foot">Une campagne de jeu de rôle · 2039</p>
+</nav>
 
-<main>
-<section class="page-head" aria-labelledby="h-page">
-  <svg class="drips" viewBox="0 0 1200 170" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><defs><linearGradient id="bl1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5E080C"/><stop offset="1" stop-color="#C8161D"/></linearGradient></defs><g fill="url(#bl1)"><rect width="1200" height="26"/><rect x="60" y="20" width="14" height="70" rx="7.0"/><circle cx="67.0" cy="96.3" r="8.7"/><rect x="150" y="20" width="10" height="40" rx="5.0"/><circle cx="155.0" cy="64.5" r="6.2"/><rect x="230" y="20" width="16" height="110" rx="8.0"/><circle cx="238.0" cy="137.2" r="9.9"/><rect x="330" y="20" width="12" height="55" rx="6.0"/><circle cx="336.0" cy="80.4" r="7.4"/><rect x="420" y="20" width="13" height="90" rx="6.5"/><circle cx="426.5" cy="115.8" r="8.1"/><rect x="520" y="20" width="10" height="35" rx="5.0"/><circle cx="525.0" cy="59.5" r="6.2"/><rect x="610" y="20" width="18" height="125" rx="9.0"/><circle cx="619.0" cy="153.1" r="11.2"/><rect x="700" y="20" width="12" height="60" rx="6.0"/><circle cx="706.0" cy="85.4" r="7.4"/><rect x="790" y="20" width="15" height="100" rx="7.5"/><circle cx="797.5" cy="126.8" r="9.3"/><rect x="880" y="20" width="10" height="45" rx="5.0"/><circle cx="885.0" cy="69.5" r="6.2"/><rect x="960" y="20" width="14" height="85" rx="7.0"/><circle cx="967.0" cy="111.3" r="8.7"/><rect x="1050" y="20" width="17" height="115" rx="8.5"/><circle cx="1058.5" cy="142.7" r="10.5"/><rect x="1130" y="20" width="11" height="50" rx="5.5"/><circle cx="1135.5" cy="75.0" r="6.8"/></g></svg>
-  <div class="wrap">
-    <h1 class="page-title" id="h-page">Créez votre personnage</h1>
-    <p class="section-lead">Choisissez une classe, puis remplissez votre fiche sur la feuille de personnage.</p>
-    <ol class="steps">
-      <li><b>Choisissez une classe</b><p>Parcourez les six fiches ou faites le test en trois questions.</p></li>
-      <li><b>Ouvrez la feuille</b><p>La feuille de personnage est un Google Sheets, il s'ouvre dans un nouvel onglet.</p></li>
-      <li><b>Remplissez votre fiche</b><p>Reportez votre classe, vos modificateurs et votre équipement de départ.</p></li>
-    </ol>
-  </div>
-</section>
-
-<section class="section classes" id="classes" aria-labelledby="h-classes">
-  <div class="wrap">
-    <h2 id="h-classes">Votre place dans l'hélicoptère</h2>
-    <p class="section-lead">Six classes, six façons d'aider le groupe à survivre. Comparez les rôles, puis choisissez. Vous hésitez ? <a href="#test">Le test en trois questions</a> vous oriente.</p>
-    <div class="common" aria-label="Points communs à toutes les classes">
-      <div><h3>20 PV</h3><p>Tous les personnages démarrent avec 20 points de vie.</p></div>
-      <div><h3>Fatigue maximum : 3</h3><p>Les compétences marquées « +1 fatigue » en ajoutent une.</p></div>
-      <div><h3>Repas court : −1 fatigue</h3><p>Prendre un repas court retire 1 point de fatigue.</p></div>
+<main class="perso">
+  <section class="wrap p-hero" data-view="checkpoint">
+    <p class="kicker">Point d'extraction · Portique 03</p>
+    <h1 class="title" id="title" aria-label="Choisissez votre survivant">
+      <span class="t-line glitch" aria-hidden="true">Choisissez</span>
+      <span class="t-line glitch" aria-hidden="true">votre survivant</span>
+    </h1>
+    <p class="p-lede">Avant de monter dans l'hélicoptère, chaque civil passe au scanner. Six profils sont sortis du lot. Un seul vous ressemble.</p>
+    <div class="p-actions">
+      <a class="btn btn--blood" href="#dossiers">Ouvrir les dossiers <span class="arrow" aria-hidden="true">→</span></a>
+      <a class="btn" href="#interrogatoire">Je ne sais pas quoi choisir</a>
+      <a class="btn" href="#inscription">S'inscrire</a>
     </div>
-    <div class="tags">
+  </section>
 
-<article class="tag" id="classe-policier" style="--c:#2F5D9B" aria-labelledby="t-policier">
-  <div class="tag-head"><span class="slot" aria-hidden="true"></span><p class="role">Tank</p></div>
-  <div class="tag-body">
-    <h3 id="t-policier">Policier</h3>
-    <p class="pitch">Vous encaissez à la place des autres. Provoquez les ennemis, levez le bouclier et tenez la ligne.</p>
-    <div class="vitals">
-      <div class="ca"><b>12</b><span>Classe d'armure</span></div>
-      <ul class="mods" aria-label="Modificateurs de statistiques"><li class="plus">+2 Constitution</li><li class="plus">+1 Force</li><li class="minus">−1 Dextérité</li></ul>
-    </div>
-    <p class="ca-note">+2 CA si bouclier équipé</p>
-  </div>
-  <div class="perf" aria-hidden="true"></div>
-  <div class="tag-body tag-foot">
-    <h4>Compétences</h4>
-    <ul class="skills"><li><div class="skill-top"><b>Provoquer</b><span class="cost">+1 fatigue</span></div><p>DD 12 Sagesse. Une entité provoquée ne peut attaquer que le Policier pendant 1 tour et passe en position défensive.</p></li><li><div class="skill-top"><b>Position défensive</b></div><p>+3 CA, mais ne peut pas attaquer. Sa vitesse est divisée par 2.</p></li></ul>
-    <h4>Inventaire de départ</h4>
-    <ul class="items"><li><span>Bouclier anti-émeute</span><small>+2 CA</small></li><li><span>Matraque</span><small>1d6 + Force</small></li></ul>
-    <button type="button" class="pick" id="pick-policier" data-pick="policier" aria-pressed="false">Choisir cette classe</button>
-  </div>
-</article>
-
-<article class="tag" id="classe-ingenieur" style="--c:#1F7563" aria-labelledby="t-ingenieur">
-  <div class="tag-head"><span class="slot" aria-hidden="true"></span><p class="role">Création</p></div>
-  <div class="tag-body">
-    <h3 id="t-ingenieur">Ingénieur</h3>
-    <p class="pitch">Vous fabriquez armes et pièges avec ce qui traîne, et vous trouvez la faille de chaque ennemi.</p>
-    <div class="vitals">
-      <div class="ca"><b>12</b><span>Classe d'armure</span></div>
-      <ul class="mods" aria-label="Modificateurs de statistiques"><li class="plus">+2 Intelligence</li><li class="plus">+1 Dextérité</li><li class="minus">−1 Charisme</li></ul>
-    </div>
-    
-  </div>
-  <div class="perf" aria-hidden="true"></div>
-  <div class="tag-body tag-foot">
-    <h4>Compétences</h4>
-    <ul class="skills"><li><div class="skill-top"><b>Arme improvisée</b></div><p>Fabrique une arme. Ses dégâts dépendent d'un jet de 1d4 : sur 1-2, 1d4 + Maîtrise ; sur 3-4, 1d6 + Maîtrise.</p></li><li><div class="skill-top"><b>Repérer un point faible</b><span class="cost">+1 fatigue</span></div><p>Jet d'Intelligence contre Charisme.</p></li><li><div class="skill-top"><b>Piège improvisé</b><span class="cost">+1 fatigue</span></div><p>10 minutes d'installation. Immobilise un ennemi et lui inflige 1d4 dégâts.</p></li></ul>
-    <h4>Inventaire de départ</h4>
-    <ul class="items"><li><span>Couteau suisse</span></li></ul>
-    <button type="button" class="pick" id="pick-ingenieur" data-pick="ingenieur" aria-pressed="false">Choisir cette classe</button>
-  </div>
-</article>
-
-<article class="tag" id="classe-voleur" style="--c:#5B4B7A" aria-labelledby="t-voleur">
-  <div class="tag-head"><span class="slot" aria-hidden="true"></span><p class="role">Discrétion</p></div>
-  <div class="tag-body">
-    <h3 id="t-voleur">Voleur</h3>
-    <p class="pitch">Vous restez dans l'ombre, vous changez de cachette sans bruit et vous frappez quand personne ne regarde.</p>
-    <div class="vitals">
-      <div class="ca"><b>11</b><span>Classe d'armure</span></div>
-      <ul class="mods" aria-label="Modificateurs de statistiques"><li class="plus">+2 Dextérité</li><li class="plus">+1 Sagesse</li><li class="minus">−1 Constitution</li></ul>
-    </div>
-    
-  </div>
-  <div class="perf" aria-hidden="true"></div>
-  <div class="tag-body tag-foot">
-    <h4>Compétences</h4>
-    <ul class="skills"><li><div class="skill-top"><b>Attaque sournoise</b><span class="cost">+1 fatigue</span></div><p>+1d6 dégâts si la cible est distraite ou ne vous voit pas.</p></li><li><div class="skill-top"><b>Tapi dans l'arbre</b></div><p>Avantage au jet de Dextérité pour passer d'une cachette à une autre.</p></li></ul>
-    <h4>Inventaire de départ</h4>
-    <ul class="items"><li><span>Couteau</span><small>1d4 + Dextérité</small></li></ul>
-    <button type="button" class="pick" id="pick-voleur" data-pick="voleur" aria-pressed="false">Choisir cette classe</button>
-  </div>
-</article>
-
-<article class="tag" id="classe-medecin" style="--c:#B53030" aria-labelledby="t-medecin">
-  <div class="tag-head"><span class="slot" aria-hidden="true"></span><p class="role">Support</p></div>
-  <div class="tag-body">
-    <h3 id="t-medecin">Médecin</h3>
-    <p class="pitch">Vous gardez le groupe debout : soins, stims et alliés relevés au bon moment.</p>
-    <div class="vitals">
-      <div class="ca"><b>11</b><span>Classe d'armure</span></div>
-      <ul class="mods" aria-label="Modificateurs de statistiques"><li class="plus">+2 Sagesse</li><li class="plus">+1 Intelligence</li><li class="minus">−1 Force</li></ul>
-    </div>
-    
-  </div>
-  <div class="perf" aria-hidden="true"></div>
-  <div class="tag-body tag-foot">
-    <h4>Compétences</h4>
-    <ul class="skills"><li><div class="skill-top"><b>Stabiliser</b><span class="cost">+1 fatigue</span></div><p>Un allié à terre récupère 1 PV.</p></li><li><div class="skill-top"><b>Fabrication de stims</b></div><p>Combine une seringue et un médicament pour fabriquer un stim.</p></li></ul>
-    <h4>Inventaire de départ</h4>
-    <ul class="items"><li><span>Kit de soin</span><small>1d8 + Sagesse</small></li><li><span>Stims ×2</span><small>+1d4 PV bonus et 1d4 à ajouter sur n'importe quel jet pendant 5 tours.</small></li></ul>
-    <button type="button" class="pick" id="pick-medecin" data-pick="medecin" aria-pressed="false">Choisir cette classe</button>
-  </div>
-</article>
-
-<article class="tag" id="classe-influenceur" style="--c:#B53A74" aria-labelledby="t-influenceur">
-  <div class="tag-head"><span class="slot" aria-hidden="true"></span><p class="role">Clown</p></div>
-  <div class="tag-body">
-    <h3 id="t-influenceur">Influenceur</h3>
-    <p class="pitch">Vous êtes la vedette du groupe. Vous détournez l'attention des ennemis et vous motivez vos alliés.</p>
-    <div class="vitals">
-      <div class="ca"><b>12</b><span>Classe d'armure</span></div>
-      <ul class="mods" aria-label="Modificateurs de statistiques"><li class="plus">+3 Charisme</li><li class="minus">−1 Sagesse</li></ul>
-    </div>
-    
-  </div>
-  <div class="perf" aria-hidden="true"></div>
-  <div class="tag-body tag-foot">
-    <h4>Compétences</h4>
-    <ul class="skills"><li><div class="skill-top"><b>Diversion</b></div><p>DD 15 Sagesse. Affecte les créatures ayant plus de 8 en Intelligence.</p></li><li><div class="skill-top"><b>Motivation</b><span class="cost">+1 fatigue</span></div><p>Accorde un bonus de 1d4 à un allié.</p></li></ul>
-    <h4>Inventaire de départ</h4>
-    <ul class="items"><li><span>Téléphone</span></li><li><span>Kit de maquillage</span></li></ul>
-    <button type="button" class="pick" id="pick-influenceur" data-pick="influenceur" aria-pressed="false">Choisir cette classe</button>
-  </div>
-</article>
-
-<article class="tag" id="classe-motard" style="--c:#B4511A" aria-labelledby="t-motard">
-  <div class="tag-head"><span class="slot" aria-hidden="true"></span><p class="role">Dégâts</p></div>
-  <div class="tag-body">
-    <h3 id="t-motard">Motard</h3>
-    <p class="pitch">Vous frappez fort et vous frappez deux fois. Ce que vous trouvez sur le terrain devient une arme.</p>
-    <div class="vitals">
-      <div class="ca"><b>12</b><span>Classe d'armure</span></div>
-      <ul class="mods" aria-label="Modificateurs de statistiques"><li class="plus">+2 Force</li><li class="plus">+1 Constitution</li><li class="minus">−1 Intelligence</li></ul>
-    </div>
-    <p class="ca-note">+2 CA avec casque et gants</p>
-  </div>
-  <div class="perf" aria-hidden="true"></div>
-  <div class="tag-body tag-foot">
-    <h4>Compétences</h4>
-    <ul class="skills"><li><div class="skill-top"><b>Attaque multiple</b><span class="cost">+1 fatigue</span></div><p>Utilise son action bonus pour effectuer une attaque supplémentaire.</p></li><li><div class="skill-top"><b>Pro de l'improvisation</b><span class="cost">+1 fatigue</span></div><p>En cas d'échec au toucher avec une arme improvisée, il peut ajouter 1d4 à son jet.</p></li><li><div class="skill-top"><b>Soif de bagarre</b><span class="cost gain">−1 fatigue</span></div><p>S'il met le dernier coup à un ennemi, il peut l'exécuter en action bonus.</p></li></ul>
-    <h4>Inventaire de départ</h4>
-    <ul class="items"><li><span>Casque de moto et gants</span><small>+2 CA</small></li></ul>
-    <button type="button" class="pick" id="pick-motard" data-pick="motard" aria-pressed="false">Choisir cette classe</button>
-  </div>
-</article>
-    </div>
-    <p class="choice" id="choice" hidden></p>
-  </div>
-</section>
-
-<section class="section" id="test" aria-labelledby="h-test">
-  <div class="wrap">
-    <h2 id="h-test">Quelle classe est faite pour vous ?</h2>
-    <p class="section-lead">Trois questions, une recommandation. Il n'y a pas de mauvaise réponse, et vous pouvez toujours choisir une autre classe.</p>
-    <div class="quiz">
-      <form id="quiz" novalidate>
-<fieldset><legend>Quand le danger surgit, votre premier réflexe est de…</legend><label class="opt" for="q1-1"><input type="radio" id="q1-1" name="q1" value="1" data-score="policier:2,motard:1"><span>Me placer devant les autres.</span></label><label class="opt" for="q1-2"><input type="radio" id="q1-2" name="q1" value="2" data-score="motard:2,voleur:1"><span>Frapper avant que l'ennemi ne bouge.</span></label><label class="opt" for="q1-3"><input type="radio" id="q1-3" name="q1" value="3" data-score="voleur:2"><span>Disparaître, puis revenir dans son dos.</span></label><label class="opt" for="q1-4"><input type="radio" id="q1-4" name="q1" value="4" data-score="ingenieur:2,voleur:1"><span>Chercher un outil, un piège ou une faille à exploiter.</span></label><label class="opt" for="q1-5"><input type="radio" id="q1-5" name="q1" value="5" data-score="medecin:2"><span>Vérifier que personne n'est blessé.</span></label><label class="opt" for="q1-6"><input type="radio" id="q1-6" name="q1" value="6" data-score="influenceur:2,voleur:1"><span>Détourner l'attention, faire diversion.</span></label></fieldset>
-<fieldset><legend>Dans le groupe, les autres diraient de vous que vous êtes…</legend><label class="opt" for="q2-1"><input type="radio" id="q2-1" name="q2" value="1" data-score="policier:2,medecin:1"><span>Le roc, sur qui on peut compter.</span></label><label class="opt" for="q2-2"><input type="radio" id="q2-2" name="q2" value="2" data-score="ingenieur:2,motard:1"><span>Le bricoleur, qui a toujours une solution.</span></label><label class="opt" for="q2-3"><input type="radio" id="q2-3" name="q2" value="3" data-score="voleur:2"><span>Le fantôme, que personne n'entend arriver.</span></label><label class="opt" for="q2-4"><input type="radio" id="q2-4" name="q2" value="4" data-score="medecin:2,influenceur:1"><span>Le soigneur, qui s'occupe de tout le monde.</span></label><label class="opt" for="q2-5"><input type="radio" id="q2-5" name="q2" value="5" data-score="influenceur:2,medecin:1"><span>L'animateur, qui remonte le moral de la troupe.</span></label><label class="opt" for="q2-6"><input type="radio" id="q2-6" name="q2" value="6" data-score="motard:2"><span>La brute, qui règle les problèmes à la force.</span></label></fieldset>
-<fieldset><legend>Ce que vous voulez vivre autour de la table…</legend><label class="opt" for="q3-1"><input type="radio" id="q3-1" name="q3" value="1" data-score="policier:2,medecin:1"><span>Tenir bon quand tout s'effondre.</span></label><label class="opt" for="q3-2"><input type="radio" id="q3-2" name="q3" value="2" data-score="ingenieur:2,voleur:1"><span>Réussir un plan préparé dans les moindres détails.</span></label><label class="opt" for="q3-3"><input type="radio" id="q3-3" name="q3" value="3" data-score="motard:2"><span>Porter le coup qui décide du combat.</span></label><label class="opt" for="q3-4"><input type="radio" id="q3-4" name="q3" value="4" data-score="voleur:2,ingenieur:1"><span>Surprendre l'ennemi sans qu'il comprenne ce qui arrive.</span></label><label class="opt" for="q3-5"><input type="radio" id="q3-5" name="q3" value="5" data-score="medecin:2,influenceur:1"><span>Sauver un allié au dernier moment.</span></label><label class="opt" for="q3-6"><input type="radio" id="q3-6" name="q3" value="6" data-score="influenceur:2"><span>Voler la vedette et faire rire toute la table.</span></label></fieldset>
-        <button type="button" class="btn btn-ghost reset" id="quiz-reset">Recommencer</button>
-      </form>
-      <div class="res-col">
-        <div id="result" aria-live="polite"><p class="res-wait">Répondez aux trois questions pour découvrir votre profil.</p></div>
+  <section class="wrap" aria-labelledby="vitals-title" data-view="scan">
+    <h2 class="sr-only" id="vitals-title">Statistiques générales</h2>
+    <div class="vitals" data-reveal>
+      <div class="vital">
+        <span class="vital-k">PV · Points de vie</span>
+        <strong>20</strong>
+        <span class="vital-note">Pour toutes les classes</span>
+        <svg class="ecg" viewBox="0 0 200 60" aria-hidden="true"><path d="M0 34 H60 L68 30 L74 34 H84 L90 6 L98 56 L104 34 H118 L126 26 L136 34 H200"/></svg>
+      </div>
+      <div class="vital">
+        <span class="vital-k">Fatigue maximum</span>
+        <strong>3</strong>
+        <span class="vital-note">Les compétences en coûtent</span>
+        <span class="pips" aria-hidden="true"><i></i><i></i><i></i></span>
+      </div>
+      <div class="vital">
+        <span class="vital-k">Repas court</span>
+        <strong>−1</strong>
+        <span class="vital-note">fatigue récupérée</span>
+        <svg class="meal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" aria-hidden="true"><path d="M5 8h14l-1.5 11a2 2 0 0 1-2 1.7h-7a2 2 0 0 1-2-1.7z"/><path d="M4 8h16"/><path d="M8 5c0-1 1-1 1-2M12 5c0-1 1-1 1-2M16 5c0-1 1-1 1-2"/></svg>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="section cta" id="creer" aria-labelledby="h-creer">
-  <svg class="drips" viewBox="0 0 1200 170" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><defs><linearGradient id="bl2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5E080C"/><stop offset="1" stop-color="#C8161D"/></linearGradient></defs><g fill="url(#bl2)"><rect width="1200" height="26"/><rect x="60" y="20" width="14" height="70" rx="7.0"/><circle cx="67.0" cy="96.3" r="8.7"/><rect x="150" y="20" width="10" height="40" rx="5.0"/><circle cx="155.0" cy="64.5" r="6.2"/><rect x="230" y="20" width="16" height="110" rx="8.0"/><circle cx="238.0" cy="137.2" r="9.9"/><rect x="330" y="20" width="12" height="55" rx="6.0"/><circle cx="336.0" cy="80.4" r="7.4"/><rect x="420" y="20" width="13" height="90" rx="6.5"/><circle cx="426.5" cy="115.8" r="8.1"/><rect x="520" y="20" width="10" height="35" rx="5.0"/><circle cx="525.0" cy="59.5" r="6.2"/><rect x="610" y="20" width="18" height="125" rx="9.0"/><circle cx="619.0" cy="153.1" r="11.2"/><rect x="700" y="20" width="12" height="60" rx="6.0"/><circle cx="706.0" cy="85.4" r="7.4"/><rect x="790" y="20" width="15" height="100" rx="7.5"/><circle cx="797.5" cy="126.8" r="9.3"/><rect x="880" y="20" width="10" height="45" rx="5.0"/><circle cx="885.0" cy="69.5" r="6.2"/><rect x="960" y="20" width="14" height="85" rx="7.0"/><circle cx="967.0" cy="111.3" r="8.7"/><rect x="1050" y="20" width="17" height="115" rx="8.5"/><circle cx="1058.5" cy="142.7" r="10.5"/><rect x="1130" y="20" width="11" height="50" rx="5.5"/><circle cx="1135.5" cy="75.0" r="6.8"/></g></svg>
-  <div class="wrap">
-    <h2 id="h-creer">Prêt à monter à bord ?</h2>
-    <p>Ouvrez la feuille de personnage, renseignez votre classe et remplissez votre fiche.</p>
-    <p class="cta-class" id="cta-class" hidden></p>
-    <a class="btn btn-primary" href="https://docs.google.com/spreadsheets/d/VOTRE_ID_ICI/copy" target="_blank" rel="noopener noreferrer">Ouvrir la feuille de personnage
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 4h6v6"/><path d="M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>
-    </a>
-    <p class="cta-note">S'ouvre dans un nouvel onglet.</p>
-  </div>
-</section>
+  <section class="wrap dossiers" id="dossiers" aria-labelledby="dossiers-title" data-view="scan">
+    <div class="section-head">
+      <h2 id="dossiers-title">Les six dossiers</h2>
+      <p>Chaque classe a un rôle dans le groupe, ses compétences et ce qu'elle avait sur elle au moment du scan.</p>
+    </div>
+    <div class="d-grid">
+      <div class="d-tabs" role="tablist" aria-label="Classes" id="tabs"></div>
+      <article class="dossier" id="dossier" role="tabpanel" tabindex="0" aria-live="polite">
+        <div class="dossier-scan" aria-hidden="true"></div>
+        <noscript><p style="padding:24px">Activez JavaScript pour consulter les dossiers des classes.</p></noscript>
+      </article>
+    </div>
+  </section>
+
+  <section class="wrap quiz" id="interrogatoire" aria-labelledby="quiz-title" data-view="checkpoint">
+    <div class="section-head">
+      <h2 id="quiz-title">L'interrogatoire</h2>
+      <p>Cinq questions posées au portique. Répondez sans réfléchir : le scanner vous propose un profil.</p>
+    </div>
+    <div class="q-card" id="quiz">
+      <div class="q-top"><span id="q-step">Question 1 / 5</span><span>Sujet non identifié</span></div>
+      <div class="q-bar"><i id="q-bar"></i></div>
+      <div class="q-body" id="q-body" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="wrap register" id="inscription" aria-labelledby="reg-title" data-view="helipad">
+    <div class="section-head">
+      <h2 id="reg-title">Le registre<br>d'embarquement</h2>
+      <p>Les inscriptions des joueurs se font sur le Google Sheet de la campagne. Notez-y votre nom et la classe que vous avez choisie.</p>
+    </div>
+    <div class="pass" data-reveal>
+      <div class="pass-main">
+        <p class="pass-head"><span>Laissez-passer · Évacuation civile</span><b>Hélico 7</b></p>
+        <p class="pass-title">Base de confinement<br>maritime n°7</p>
+        <dl>
+          <div><dt>Pilote</dt><dd>Capt. Trevor</dd></div>
+          <div><dt>Classe choisie</dt><dd class="is-blood" id="pass-class">À choisir</dd></div>
+          <div><dt>Scan</dt><dd>Négatif</dd></div>
+          <div><dt>Départ</dt><dd>2039 · Immédiat</dd></div>
+        </dl>
+      </div>
+      <div class="pass-stub">
+        <span>Porte</span>
+        <span class="pass-gate">03</span>
+        <svg class="barcode" id="barcode" viewBox="0 0 160 70" preserveAspectRatio="none" aria-hidden="true"></svg>
+      </div>
+      <span class="stamp" aria-hidden="true">Autorisé</span>
+    </div>
+    <a class="btn btn--blood btn--xl" id="sheet-link" href="#" target="_blank" rel="noopener noreferrer">S'inscrire sur le Google Sheet <span aria-hidden="true">↗</span></a>
+    <p class="reg-note">Le lien s'ouvre dans un nouvel onglet.</p>
+  </section>
 </main>
-<script src="perso.js"></script>
+
 <footer class="foot">
-  <div class="wrap">
-    <p>Bienvenue chez les fous, un jeu de rôle post-apocalyptique.</p>
-    <nav aria-label="Pages du site"><a href="index.html">Accueil</a><a href="histoire.html">L'histoire</a><a href="personnage.html">Créer votre perso</a></nav>
-  </div>
+  <span>Bienvenue chez les fous · Campagne de jeu de rôle</span>
+  <span>Zone de confinement 7 · 2039</span>
 </footer>
+
+<div class="grain" aria-hidden="true"></div>
+<div class="scanlines" aria-hidden="true"></div>
+<div class="veil" aria-hidden="true"></div>
 </body>
 </html>

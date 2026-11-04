@@ -1,48 +1,40 @@
 # Bienvenue chez les fous
 
-Site vitrine du JDR en trois pages :
+Site immersif de la campagne de JDR (apocalypse zombie, 2039), en trois pages :
 
-- `index.html` : accueil (ambiance, contexte, aperçu des 6 classes)
-- `histoire.html` : l'histoire, à lire scène par scène
-- `personnage.html` : les fiches de classe, le test pour choisir et le lien vers la feuille de personnage
+- `index.html` : l'accueil. Écran d'avertissement (maintenir pour entrer), rue en 3D éclairée à la lampe torche, fragments d'ambiance, puis les deux portes.
+- `histoire.html` : le synopsis complet, à lire d'une traite. La caméra suit le récit : la rue, la foule, les portiques, l'héliport, le décollage.
+- `personnage.html` : les six classes (dossiers interactifs), l'interrogatoire pour choisir et l'inscription sur le Google Sheet.
 
-Site statique, sans build ni dépendance (seule la police vient de Google Fonts).
-Fichiers partagés : `style.css` (toute la mise en forme), `histoire.js` (lecture scène par scène), `perso.js` (test de classe et choix).
+Site statique, sans étape de build. Les bibliothèques viennent d'un CDN : Three.js (3D), GSAP + ScrollTrigger (animations), Lenis (défilement doux). Tous les sons sont synthétisés dans le navigateur (Web Audio), sans fichier audio.
 
-## Avant de publier : le lien du Google Sheets
+## Le lien du Google Sheet
 
-Dans `personnage.html`, remplacez `VOTRE_ID_ICI` par l'identifiant de votre feuille (2 occurrences : la barre du haut et l'appel final).
+Dans `assets/js/perso.js`, renseignez la constante en haut du fichier :
 
-Le lien doit ressembler à :
-
-```
-https://docs.google.com/spreadsheets/d/VOTRE_ID_ICI/copy
+```js
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/.../edit';
 ```
 
-Finir par `/copy` oblige chaque joueur à créer sa propre copie de la feuille au lieu de modifier l'originale.
-
-## Publier sur GitHub
-
-```bash
-git init
-git add .
-git commit -m "Site vitrine du JDR"
-git branch -M main
-git remote add origin https://github.com/VOTRE_COMPTE/VOTRE_DEPOT.git
-git push -u origin main
-```
-
-## Déployer sur Cloudflare Pages
-
-1. Cloudflare > Workers & Pages > Create > Pages > Connect to Git.
-2. Choisissez le dépôt.
-3. Framework preset : `None`. Build command : laissez vide. Build output directory : `/` (la racine).
-4. Save and Deploy.
-
-Chaque `git push` redéploie le site automatiquement.
+Tant qu'elle est vide, le bouton affiche « Inscriptions bientôt ouvertes » et reste désactivé.
 
 ## Modifier le contenu
 
-- Textes de l'histoire : `histoire.html`, une balise `<article class="scene">` par scène.
-- Fiches de classe et questions du test : `personnage.html`.
-- Couleurs : bloc `:root` en haut de `style.css`.
+- Texte de l'histoire : `histoire.html`, un paragraphe par balise `<p class="s-p">`.
+- Classes et questions de l'interrogatoire : tableaux `CLASSES` et `QUESTIONS` dans `assets/js/perso.js`.
+- Couleurs et polices : bloc `:root` en haut de `assets/css/main.css`.
+- La ville 3D (points de vue, lumières, foule) : `assets/js/world.js`.
+
+## Tester en local
+
+Les modules JavaScript ne se chargent pas en ouvrant le fichier directement : il faut un petit serveur.
+
+```bash
+npx http-server -p 8080 -c-1
+```
+
+Puis ouvrez http://localhost:8080.
+
+## Déploiement
+
+Cloudflare Workers (fichiers statiques), configuré dans `wrangler.jsonc`. Chaque `git push` sur `main` relance le déploiement. `.assetsignore` liste les fichiers qui ne sont pas publiés.

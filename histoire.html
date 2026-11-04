@@ -3,69 +3,122 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="L'histoire du JDR Bienvenue chez les fous, à lire scène par scène.">
-<meta name="theme-color" content="#0A0606">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A0606'/%3E%3Cpath d='M16 5c4 6 7 9 7 13a7 7 0 0 1-14 0c0-4 3-7 7-13z' fill='%23C8161D'/%3E%3C/svg%3E">
-<title>L'histoire | Bienvenue chez les fous</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&amp;family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Rubik+Wet+Paint&amp;display=swap">
-<link rel="stylesheet" href="style.css">
+<title>L'histoire · Bienvenue chez les fous</title>
+<meta name="description" content="Le synopsis de la campagne : 2039, une ville confinée, un protocole d'évacuation, un hélicoptère.">
+<meta name="theme-color" content="#060404">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23060404'/%3E%3Cpath d='M16 4c4 7 7 10 7 14a7 7 0 0 1-14 0c0-4 3-7 7-14z' fill='%23b3121a'/%3E%3C/svg%3E">
+<script>document.documentElement.className='js';setTimeout(function(){document.documentElement.classList.add('is-ready')},5000);</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Rubik+Wet+Paint&family=Saira+Stencil+One&family=Share+Tech+Mono&display=swap">
+<link rel="stylesheet" href="assets/css/main.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script type="module" src="assets/js/story.js"></script>
 </head>
-<body>
-<header class="bar">
-  <div class="wrap">
-    <a class="brand" href="index.html">Bienvenue chez les fous</a>
-    <nav class="nav" aria-label="Pages">
-      <a href="index.html">Accueil</a>
-      <a href="histoire.html" aria-current="page">L'histoire</a>
-      <a href="personnage.html">Créer votre perso</a>
-    </nav>
-    <a class="btn btn-primary" href="personnage.html">Créer mon personnage</a>
+<body class="page-story">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <filter id="erode"><feTurbulence type="fractalNoise" baseFrequency=".04" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="6" xChannelSelector="R" yChannelSelector="G"/></filter>
+</svg>
+
+<canvas id="world" class="world" aria-hidden="true"></canvas>
+<div class="shade" aria-hidden="true"></div>
+
+<header class="hud">
+  <a class="hud-brand" href="index.html"><span class="hud-dot"></span>Zone 7 <em>// Bienvenue chez les fous</em></a>
+  <div class="hud-right">
+    <button class="hud-btn hud-sound" type="button" data-sound-toggle aria-pressed="false" aria-label="Son"><span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="hud-sound-label hud-label">Muet</span></button>
+    <button class="hud-btn hud-menu" type="button" aria-expanded="false" aria-controls="menu"><span class="hud-label">Menu</span><span class="burger" aria-hidden="true"></span></button>
   </div>
 </header>
+<nav class="menu" id="menu" aria-label="Pages">
+  <ol>
+    <li><a href="index.html">La zone <small>Accueil</small></a></li>
+    <li><a href="histoire.html" aria-current="page">L'histoire <small>Le synopsis</small></a></li>
+    <li><a href="personnage.html">Votre survivant <small>Classes et inscription</small></a></li>
+  </ol>
+  <p class="menu-foot">Une campagne de jeu de rôle · 2039</p>
+</nav>
 
-<main>
-<section class="page-head" aria-labelledby="h-page">
-  <svg class="drips" viewBox="0 0 1200 170" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><defs><linearGradient id="bl1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5E080C"/><stop offset="1" stop-color="#C8161D"/></linearGradient></defs><g fill="url(#bl1)"><rect width="1200" height="26"/><rect x="60" y="20" width="14" height="70" rx="7.0"/><circle cx="67.0" cy="96.3" r="8.7"/><rect x="150" y="20" width="10" height="40" rx="5.0"/><circle cx="155.0" cy="64.5" r="6.2"/><rect x="230" y="20" width="16" height="110" rx="8.0"/><circle cx="238.0" cy="137.2" r="9.9"/><rect x="330" y="20" width="12" height="55" rx="6.0"/><circle cx="336.0" cy="80.4" r="7.4"/><rect x="420" y="20" width="13" height="90" rx="6.5"/><circle cx="426.5" cy="115.8" r="8.1"/><rect x="520" y="20" width="10" height="35" rx="5.0"/><circle cx="525.0" cy="59.5" r="6.2"/><rect x="610" y="20" width="18" height="125" rx="9.0"/><circle cx="619.0" cy="153.1" r="11.2"/><rect x="700" y="20" width="12" height="60" rx="6.0"/><circle cx="706.0" cy="85.4" r="7.4"/><rect x="790" y="20" width="15" height="100" rx="7.5"/><circle cx="797.5" cy="126.8" r="9.3"/><rect x="880" y="20" width="10" height="45" rx="5.0"/><circle cx="885.0" cy="69.5" r="6.2"/><rect x="960" y="20" width="14" height="85" rx="7.0"/><circle cx="967.0" cy="111.3" r="8.7"/><rect x="1050" y="20" width="17" height="115" rx="8.5"/><circle cx="1058.5" cy="142.7" r="10.5"/><rect x="1130" y="20" width="11" height="50" rx="5.5"/><circle cx="1135.5" cy="75.0" r="6.8"/></g></svg>
-  <div class="wrap">
-    <h1 class="page-title" id="h-page">L'histoire</h1>
-    <p class="section-lead">8 scènes à lire à votre rythme. C'est ce que vos personnages vivent avant la première partie.</p>
-  </div>
-</section>
+<nav class="s-rail" aria-label="Chapitres">
+  <ol>
+    <li data-for="ch-ville">La ville</li>
+    <li data-for="ch-evacuation">L'évacuation</li>
+    <li data-for="ch-portiques">Les portiques</li>
+    <li data-for="ch-envol">L'envol</li>
+  </ol>
+</nav>
 
-<section class="reader" id="reader" aria-label="Lecture de l'histoire">
-  <div class="wrap">
-    <div class="progress" role="progressbar" aria-label="Progression de la lecture" aria-valuemin="1" aria-valuemax="8" aria-valuenow="1"><span id="bar"></span></div>
-    <p class="count" id="count">Scène 1 sur 8</p>
-    <div class="scenes" aria-live="polite">
-      <article class="scene" id="scene-1" aria-labelledby="st-1"><h2 id="st-1">2039</h2><p>Nous sommes en 2039, au milieu d'une ville dévastée par l'apocalypse.</p>
-<p>Depuis maintenant 5 ans, le virus Z-001 inquiète la population. Le gouvernement promettait que la situation était « sous contrôle », mais cela fait désormais 4 ans que vous êtes confinés dans la ville, sans aucun contact avec le monde extérieur.</p></article>
-      <article class="scene" id="scene-2" aria-labelledby="st-2"><h2 id="st-2">L'annonce</h2><p>Alors que vous vaquez tous à vos occupations, plutôt répétitives depuis que le courant a été coupé pour les civils il y a une semaine, une annonce est diffusée dans toute la ville.</p><figure class="say"><p class="say-who">Annonce diffusée dans toute la ville</p><q>« Protocole d'évacuation enclenché. Veuillez rejoindre le point d'extraction le plus proche de chez vous dans les plus brefs délais, dans le calme. »</q></figure></article>
-      <article class="scene" id="scene-3" aria-labelledby="st-3"><h2 id="st-3">Le point d'extraction</h2><p>Le lieu d'extraction est noir de monde. Vous êtes bousculés, mais vous arrivez tant bien que mal à vous frayer un chemin dans cette foule. Vous arrivez avec vos proches juste devant les portiques où la sécurité laisse passer les civils au compte-gouttes.</p></article>
-      <article class="scene" id="scene-4" aria-labelledby="st-4"><h2 id="st-4">La mère</h2><p>Vous apercevez alors une femme en larmes, entourée de militaires, puis vous l'entendez crier.</p><figure class="say"><p class="say-who">Une femme en larmes</p><q>« Rendez-moi mon enfant !!! Par pitié, mon bébé !!! »</q></figure><p>Un militaire sépare brutalement cette mère de son fils. La femme est évacuée avec les autres, tandis que son fils est emmené dans une salle de confinement juste à côté.</p></article>
-      <article class="scene" id="scene-5" aria-labelledby="st-5"><h2 id="st-5">Les scans</h2><p>Après avoir passé une série de scans, les militaires vous laissent enfin entrer avec un groupe sur le lieu d'extraction mais vous avez été séparés de vos proches qui prendront un autre hélicoptère.</p></article>
-      <article class="scene" id="scene-6" aria-labelledby="st-6"><h2 id="st-6">À bord</h2><p>C'est là que vous vous rencontrez tous pour la première fois, avant de monter ensemble à bord d'un des hélicoptères pour quitter la ville, aux côtés de cette femme et d'autres civils.</p></article>
-      <article class="scene" id="scene-7" aria-labelledby="st-7"><h2 id="st-7">Le Capitaine Trevor</h2><p>Une fois à bord, un militaire s'adresse à vous d'une voix fatiguée et malade.</p><figure class="say long"><p class="say-who">Capitaine Trevor</p><q>« Bienvenue à bord, ici le Capitaine Trevor. J'ai été missionné pour vous emmener en toute sécurité sur la base de confinement maritime numéro 7. Pour votre sécurité, merci de bien vous attacher et de rester calmes pendant toute la durée du vol. »</q></figure><p>Ce discours très vague, partiellement couvert par les pleurs de la dame, ne vous donne que très peu d'informations sur la situation.</p></article>
-      <article class="scene" id="scene-8" aria-labelledby="st-8"><h2 id="st-8">Un coup de feu</h2><p>Soudain, juste après la prise de parole du Capitaine Trevor, un bruit strident retentit depuis la salle de confinement, suivi immédiatement d'un coup de feu…</p>
-<p class="close-line">C'est ainsi, au milieu des pleurs et des cris, que l'hélicoptère prend son envol.</p>
-<div class="cta-row">
-  <a class="btn btn-primary" href="personnage.html">Créer mon personnage</a>
-  <button type="button" class="btn btn-ghost" id="restart">Relire depuis le début</button>
-</div></article>
+<main class="story">
+  <header class="s-hero" data-view="street">
+    <p class="kicker">Dossier 01 · Synopsis</p>
+    <h1 class="title" id="title" aria-label="Bienvenue chez les fous">
+      <span class="t-line glitch" aria-hidden="true">Bienvenue</span>
+      <span class="t-line glitch" aria-hidden="true">chez les fous</span>
+    </h1>
+    <p class="s-meta mono">Lecture · 3 minutes · Faites défiler</p>
+  </header>
+
+  <article class="s-text" id="story">
+    <p class="s-p s-lead" id="ch-ville" data-chapter data-view="street">Nous sommes en 2039, au milieu d’une ville dévastée par l’apocalypse.</p>
+
+    <p class="s-p" data-view="street2">Depuis maintenant 5 ans, le virus Z-001 inquiète la population. Le gouvernement promettait que la situation était <span class="s-ironic" id="ironic">« sous contrôle »<svg viewBox="0 0 200 20" preserveAspectRatio="none" aria-hidden="true"><path d="M2 12 C 40 4, 70 18, 110 9 S 170 6, 198 11"/></svg></span>, mais cela fait désormais 4 ans que vous êtes confinés dans la ville, sans aucun contact avec le monde extérieur.</p>
+
+    <p class="s-p" id="powercut">Alors que vous vaquez tous à vos occupations, plutôt répétitives depuis que <span class="s-flicker">le courant a été coupé</span> pour les civils il y a une semaine, une annonce est diffusée dans toute la ville :</p>
+
+    <blockquote class="s-radio" id="broadcast" data-view="street3">
+      <header><span><span class="rec"></span>Diffusion d'urgence</span><span>Toutes fréquences</span></header>
+      <canvas class="wave" aria-hidden="true"></canvas>
+      <p data-type>« Protocole d’évacuation enclenché. Veuillez rejoindre le point d'extraction le plus proche de chez vous dans les plus brefs délais, dans le calme. »</p>
+    </blockquote>
+
+    <p class="s-p" id="ch-evacuation" data-chapter data-view="crowd">Le lieu d'extraction est noir de monde. Vous êtes bousculés, mais vous arrivez tant bien que mal à vous frayer un chemin dans cette foule. Vous arrivez avec vos proches juste devant les portiques où la sécurité laisse passer les civils au compte-gouttes.</p>
+
+    <p class="s-p" data-view="checkpoint">Vous apercevez alors une femme en larmes, entourée de militaires, puis vous l'entendez crier.</p>
+
+    <blockquote class="s-scream" id="scream">
+      <p>« Rendez-moi mon enfant !!! Par pitié, mon bébé !!! »</p>
+    </blockquote>
+
+    <p class="s-p">Un militaire sépare brutalement cette mère de son fils. La femme est évacuée avec les autres, tandis que son fils est emmené dans une salle de confinement juste à côté.</p>
+
+    <p class="s-p s-scan" id="ch-portiques" data-chapter data-view="scan">Après avoir passé une série de scans, les militaires vous laissent enfin entrer avec un groupe sur le lieu d’extraction mais vous avez été séparé de vos proches qui prendront un autre hélicoptère. C’est là que vous vous rencontrez tous pour la première fois, avant de monter ensemble à bord d’un des hélicoptères pour quitter la ville, aux côtés de cette femme et d’autres civils.</p>
+
+    <p class="s-p" id="ch-envol" data-chapter data-view="helipad">Une fois à bord, un militaire s’adresse à vous d’une voix fatiguée et malade :</p>
+
+    <blockquote class="s-comms" id="trevor" data-view="aboard">
+      <header><span><span class="rec"></span>Canal 7 · Cabine</span><span>Capt. Trevor</span></header>
+      <canvas class="wave" aria-hidden="true"></canvas>
+      <p data-type>« Bienvenue à bord, ici le Capitaine Trevor. J’ai été missionné pour vous emmener en toute sécurité sur la base de confinement maritime numéro 7. Pour votre sécurité, merci de bien vous attacher et de rester calmes pendant toute la durée du vol. »</p>
+    </blockquote>
+
+    <p class="s-p">Ce discours très vague, partiellement couvert par les pleurs de la dame, ne vous donne que très peu d’informations sur la situation.</p>
+
+    <p class="s-p s-shot" id="shot">Soudain, juste après la prise de parole du Capitaine Trevor, un bruit strident retentit depuis la salle de confinement, suivi immédiatement <span class="s-bang">d'un coup de feu…</span></p>
+
+    <p class="s-p s-final" id="liftoff" data-view="liftoff">C’est ainsi, au milieu des pleurs et des cris, que l'hélicoptère prend son envol.</p>
+  </article>
+
+  <section class="s-end" data-view="aerial">
+    <p class="kicker">Fin de la transmission</p>
+    <h2>La suite<br>se joue à la table</h2>
+    <p>Il vous reste à choisir qui vous étiez avant de monter dans cet hélicoptère.</p>
+    <div class="actions">
+      <a class="btn btn--blood btn--xl" href="personnage.html">Créer votre survivant <span class="arrow" aria-hidden="true">→</span></a>
+      <a class="btn" href="index.html">Retour à la zone</a>
     </div>
-    <div class="reader-nav nojs-hide">
-      <button type="button" class="btn btn-ghost" id="prev">Précédent</button>
-      <button type="button" class="btn btn-primary" id="next">Suite</button>
-    </div>
-    <ol class="dots" id="dots" aria-label="Scènes"></ol>
-  </div>
-</section>
+  </section>
 </main>
-<script src="histoire.js"></script>
+
 <footer class="foot">
-  <div class="wrap">
-    <p>Bienvenue chez les fous, un jeu de rôle post-apocalyptique.</p>
-    <nav aria-label="Pages du site"><a href="index.html">Accueil</a><a href="histoire.html">L'histoire</a><a href="personnage.html">Créer votre perso</a></nav>
-  </div>
+  <span>Bienvenue chez les fous · Campagne de jeu de rôle</span>
+  <span>Zone de confinement 7 · 2039</span>
 </footer>
+
+<div class="grain" aria-hidden="true"></div>
+<div class="scanlines" aria-hidden="true"></div>
+<div class="veil" aria-hidden="true"></div>
 </body>
 </html>

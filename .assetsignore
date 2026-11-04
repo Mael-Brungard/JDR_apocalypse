@@ -1,4 +1,5 @@
 .git
 .gitignore
+.claude
 README.md
 wrangler.jsonc

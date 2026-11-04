@@ -3,128 +3,142 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="description" content="Jeu de rôle post-apocalyptique : 2039, un virus, un hélicoptère. Découvrez l'histoire et les 6 classes.">
-<meta name="theme-color" content="#0A0606">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230A0606'/%3E%3Cpath d='M16 5c4 6 7 9 7 13a7 7 0 0 1-14 0c0-4 3-7 7-13z' fill='%23C8161D'/%3E%3C/svg%3E">
 <title>Bienvenue chez les fous</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&amp;family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Rubik+Wet+Paint&amp;display=swap">
-<link rel="stylesheet" href="style.css">
+<meta name="description" content="2039. Une ville confinée depuis quatre ans. Une campagne de jeu de rôle dans l'apocalypse zombie.">
+<meta name="theme-color" content="#060404">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%23060404'/%3E%3Cpath d='M16 4c4 7 7 10 7 14a7 7 0 0 1-14 0c0-4 3-7 7-14z' fill='%23b3121a'/%3E%3C/svg%3E">
+<script>document.documentElement.className='js';setTimeout(function(){document.documentElement.classList.add('is-ready')},5000);</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Rubik+Wet+Paint&family=Saira+Stencil+One&family=Share+Tech+Mono&display=swap">
+<link rel="stylesheet" href="assets/css/main.css">
+<script type="importmap">{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}</script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
+<script type="module" src="assets/js/home.js"></script>
 </head>
-<body>
-<header class="bar">
-  <div class="wrap">
-    <a class="brand" href="index.html">Bienvenue chez les fous</a>
-    <nav class="nav" aria-label="Pages">
-      <a href="index.html" aria-current="page">Accueil</a>
-      <a href="histoire.html">L'histoire</a>
-      <a href="personnage.html">Créer votre perso</a>
-    </nav>
-    <a class="btn btn-primary" href="personnage.html">Créer mon personnage</a>
+<body class="page-home">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+  <filter id="erode"><feTurbulence type="fractalNoise" baseFrequency=".04" numOctaves="2" seed="7" result="n"/><feDisplacementMap in="SourceGraphic" in2="n" scale="6" xChannelSelector="R" yChannelSelector="G"/></filter>
+</svg>
+
+<canvas id="world" class="world" aria-hidden="true"></canvas>
+<div class="shade" aria-hidden="true"></div>
+
+<div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gate-title">
+  <div class="gate-inner">
+    <p class="gate-head mono"><span class="rec"></span>Système d'alerte d'urgence · Zone 7</p>
+    <h2 class="gate-title" id="gate-title">Avant d'entrer</h2>
+    <ul class="gate-warn mono">
+      <li>Images violentes et flashs lumineux</li>
+      <li>Son immersif : mettez un casque</li>
+      <li>Éteignez la lumière</li>
+    </ul>
+    <button class="hold" id="hold" type="button" aria-describedby="hold-help">
+      <svg viewBox="0 0 120 120" aria-hidden="true"><circle class="hold-track" cx="60" cy="60" r="54"/><circle class="hold-fill" cx="60" cy="60" r="54"/></svg>
+      <span class="hold-label" id="hold-label">Maintenir<br>pour entrer</span>
+    </button>
+    <p class="sr-only" id="hold-help">Maintenez le bouton appuyé, à la souris, au doigt ou avec la touche Entrée, pour entrer avec le son.</p>
+    <button class="gate-mute mono" id="enter-mute" type="button">Entrer sans le son</button>
+    <p class="gate-load mono" aria-live="polite">Connexion au réseau d'urgence… <span id="gate-load">0</span>%</p>
+  </div>
+</div>
+
+<header class="hud">
+  <a class="hud-brand" href="index.html"><span class="hud-dot"></span>Zone 7 <em>// Bienvenue chez les fous</em></a>
+  <div class="hud-right">
+    <button class="hud-btn hud-sound" type="button" data-sound-toggle aria-pressed="false" aria-label="Son"><span class="eq" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="hud-sound-label hud-label">Muet</span></button>
+    <button class="hud-btn hud-menu" type="button" aria-expanded="false" aria-controls="menu"><span class="hud-label">Menu</span><span class="burger" aria-hidden="true"></span></button>
   </div>
 </header>
+<nav class="menu" id="menu" aria-label="Pages">
+  <ol>
+    <li><a href="index.html" aria-current="page">La zone <small>Accueil</small></a></li>
+    <li><a href="histoire.html">L'histoire <small>Le synopsis</small></a></li>
+    <li><a href="personnage.html">Votre survivant <small>Classes et inscription</small></a></li>
+  </ol>
+  <p class="menu-foot">Une campagne de jeu de rôle · 2039</p>
+</nav>
 
-<main id="top">
-<section class="hero" aria-labelledby="h-title">
-  <div class="beam" aria-hidden="true"></div>
-  <svg class="splat" viewBox="0 0 400 400" aria-hidden="true"><g fill="#8E0F15"><path d="M200 60c30 10 40 40 70 40 36 0 60 30 50 62-8 26 24 46 10 80-14 34-52 20-70 46-20 30-64 40-92 20-24-18-62-4-76-34-14-30 20-52 10-86-10-34 24-60 52-64 26-4 28-44 46-64z"/><circle cx="330" cy="70" r="14"/><circle cx="360" cy="110" r="7"/><circle cx="60" cy="320" r="10"/><circle cx="30" cy="290" r="5"/><circle cx="350" cy="330" r="12"/></g></svg>
-  <svg class="drips" viewBox="0 0 1200 170" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><defs><linearGradient id="bl1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5E080C"/><stop offset="1" stop-color="#C8161D"/></linearGradient></defs><g fill="url(#bl1)"><rect width="1200" height="26"/><rect x="60" y="20" width="14" height="70" rx="7.0"/><circle cx="67.0" cy="96.3" r="8.7"/><rect x="150" y="20" width="10" height="40" rx="5.0"/><circle cx="155.0" cy="64.5" r="6.2"/><rect x="230" y="20" width="16" height="110" rx="8.0"/><circle cx="238.0" cy="137.2" r="9.9"/><rect x="330" y="20" width="12" height="55" rx="6.0"/><circle cx="336.0" cy="80.4" r="7.4"/><rect x="420" y="20" width="13" height="90" rx="6.5"/><circle cx="426.5" cy="115.8" r="8.1"/><rect x="520" y="20" width="10" height="35" rx="5.0"/><circle cx="525.0" cy="59.5" r="6.2"/><rect x="610" y="20" width="18" height="125" rx="9.0"/><circle cx="619.0" cy="153.1" r="11.2"/><rect x="700" y="20" width="12" height="60" rx="6.0"/><circle cx="706.0" cy="85.4" r="7.4"/><rect x="790" y="20" width="15" height="100" rx="7.5"/><circle cx="797.5" cy="126.8" r="9.3"/><rect x="880" y="20" width="10" height="45" rx="5.0"/><circle cx="885.0" cy="69.5" r="6.2"/><rect x="960" y="20" width="14" height="85" rx="7.0"/><circle cx="967.0" cy="111.3" r="8.7"/><rect x="1050" y="20" width="17" height="115" rx="8.5"/><circle cx="1058.5" cy="142.7" r="10.5"/><rect x="1130" y="20" width="11" height="50" rx="5.5"/><circle cx="1135.5" cy="75.0" r="6.8"/></g></svg>
-  <div class="wrap">
-    <h1 id="h-title"><span>Bienvenue</span> <span>chez les fous</span></h1>
-    <div class="hero-grid">
-      <div>
-        <p class="pa">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9v6h4l6 5V4L8 9H4z"/><path d="M17.5 8.5a5 5 0 0 1 0 7"/><path d="M20 6a8.5 8.5 0 0 1 0 12"/></svg>
-          <span>« Protocole d'évacuation enclenché. »</span>
-        </p>
-        <p class="lede">2039. Quatre ans confinés dans une ville dévastée par le virus Z-001, puis une annonce dans tous les haut-parleurs. Vous montez à bord d'un hélicoptère avec des inconnus. Juste avant le décollage, un coup de feu claque dans la salle de confinement.</p>
-        <div class="cta-row">
-          <a class="btn btn-primary" href="histoire.html">Lire l'histoire</a>
-          <a class="btn btn-ghost" href="personnage.html">Créer mon personnage</a>
-        </div>
-      </div>
-      <dl class="manifest" aria-label="Manifeste du vol">
-        <div><dt>Départ</dt><dd>Point d'extraction de la ville</dd></div>
-        <div><dt>Destination</dt><dd>Base de confinement maritime numéro 7</dd></div>
-        <div><dt>Capitaine</dt><dd>Trevor</dd></div>
-        <div><dt>À bord</dt><dd>Votre groupe, des civils et une mère séparée de son fils</dd></div>
-      </dl>
+<main class="home">
+  <section class="h-hero" data-view="street">
+    <p class="kicker" data-hero-fade>Zone de confinement 7 · 2039</p>
+    <div class="hero-stack">
+      <canvas class="drips" id="drips" aria-hidden="true"></canvas>
+      <h1 class="title" id="title" aria-label="Bienvenue chez les fous">
+        <span class="t-line glitch" aria-hidden="true">Bienvenue</span>
+        <span class="t-line glitch" aria-hidden="true">chez les fous</span>
+      </h1>
     </div>
-  </div>
-</section>
+    <p class="hint hint--fine mono" data-hero-fade>Bougez la souris : votre lampe éclaire la rue</p>
+    <p class="hint hint--coarse mono" data-hero-fade>Touchez l'écran pour éclairer la rue</p>
+    <div class="scroll-cue mono" aria-hidden="true" data-hero-fade><span>Avancer</span><i></i></div>
+  </section>
 
-<div class="tape-wrap" aria-hidden="true"><div class="tape"><span>Zone de quarantaine</span><span>Virus Z-001</span><span>Ne pas franchir</span><span>Zone de quarantaine</span><span>Virus Z-001</span><span>Ne pas franchir</span><span>Zone de quarantaine</span><span>Virus Z-001</span><span>Ne pas franchir</span></div></div>
-
-<section class="section" id="contexte" aria-labelledby="h-contexte">
-  <div class="wrap">
-    <h2 id="h-contexte">Avant le décollage</h2>
-    <p class="section-lead">Ce que vous savez quand l'annonce retentit.</p>
-    <div class="home-grid">
-      <ol class="tl" aria-label="Chronologie">
-        <li><div class="tl-when">Il y a 5 ans</div><p class="tl-what">Le virus Z-001 inquiète la population. Le gouvernement promet que la situation est « sous contrôle ».</p></li>
-        <li><div class="tl-when">Il y a 4 ans</div><p class="tl-what">Vous êtes confinés dans la ville, sans aucun contact avec le monde extérieur.</p></li>
-        <li><div class="tl-when">Il y a 1 semaine</div><p class="tl-what">Le courant est coupé pour les civils.</p></li>
-        <li><div class="tl-when">Aujourd'hui</div><p class="tl-what">Protocole d'évacuation. Direction la base de confinement maritime numéro 7.</p></li>
-      </ol>
-      <div class="home-text">
-        <p>Vous arrivez au point d'extraction avec vos proches. La foule est dense, les portiques laissent passer les civils au compte-gouttes, et une femme hurle qu'on lui rende son enfant.</p>
-        <p>Après les scans, on vous sépare de vos proches. Votre groupe monte dans un hélicoptère. Le Capitaine qui vous accueille a la voix fatiguée et malade.</p>
-        <div class="cta-row"><a class="btn btn-primary" href="histoire.html">Lire l'histoire, scène par scène</a></div>
-      </div>
+  <section class="h-frag" data-view="street">
+    <div>
+      <p class="frag-num" aria-hidden="true">5</p>
+      <p class="frag-word">ans</p>
+      <p class="frag-sub mono"><span class="sr-only">Cinq ans </span>que le virus Z-001 inquiète la population.</p>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="section classes" id="classes" aria-labelledby="h-classes">
-  <div class="wrap">
-    <h2 id="h-classes">Six façons de survivre</h2>
-    <p class="section-lead">Chaque classe a son rôle dans le groupe. Ouvrez une fiche pour voir ses compétences et son équipement.</p>
-    <div class="tags" style="margin-top:40px">
-      <a class="tag mini" href="personnage.html#classe-policier" style="--c:#2F5D9B">
-        <div class="tag-head"><span class="slot" aria-hidden="true"></span><p class="role">Tank</p></div>
-        <div class="tag-body"><h3>Policier</h3><p class="pitch">Vous encaissez à la place des autres. Provoquez les ennemis, levez le bouclier et tenez la ligne.</p><span class="mini-go">Voir la fiche</span></div>
+  <section class="h-frag" data-view="street2">
+    <div>
+      <p class="frag-num" aria-hidden="true">4</p>
+      <p class="frag-word">ans</p>
+      <p class="frag-sub mono"><span class="sr-only">Quatre ans </span>enfermés. Aucun contact avec le monde extérieur.</p>
+    </div>
+  </section>
+
+  <section class="h-frag" data-view="street2" id="powercut">
+    <div>
+      <p class="frag-num" aria-hidden="true">7</p>
+      <p class="frag-word">jours</p>
+      <p class="frag-sub mono"><span class="sr-only">Sept jours </span>sans courant.</p>
+    </div>
+  </section>
+
+  <section class="h-radio" data-view="street3" id="broadcast">
+    <div class="radio">
+      <div class="radio-head mono"><span><span class="rec"></span>Diffusion d'urgence</span><span>Toutes fréquences</span></div>
+      <canvas class="radio-wave" id="wave" aria-hidden="true"></canvas>
+      <p class="radio-text" id="radio-text" data-text="Protocole d'évacuation enclenché.">Protocole d'évacuation enclenché.</p>
+      <p class="radio-sub" id="radio-sub" data-text="Veuillez rejoindre le point d'extraction le plus proche de chez vous…">Veuillez rejoindre le point d'extraction le plus proche de chez vous…</p>
+    </div>
+  </section>
+
+  <section class="h-omen" data-view="crowd" id="omen">
+    <p class="omen">Tout le monde<br>ne partira pas.</p>
+  </section>
+
+  <section class="h-doors" data-view="checkpoint" id="doors">
+    <h2 class="doors-title">Choisissez<br>votre porte</h2>
+    <div class="doors">
+      <a class="door" href="histoire.html">
+        <span class="door-num">01 · Dossier</span>
+        <span class="door-go" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        <span class="door-name">L'histoire</span>
+        <span class="door-sub">Lire le synopsis de la campagne</span>
       </a>
-      <a class="tag mini" href="personnage.html#classe-ingenieur" style="--c:#1F7563">
-        <div class="tag-head"><span class="slot" aria-hidden="true"></span><p class="role">Création</p></div>
-        <div class="tag-body"><h3>Ingénieur</h3><p class="pitch">Vous fabriquez armes et pièges avec ce qui traîne, et vous trouvez la faille de chaque ennemi.</p><span class="mini-go">Voir la fiche</span></div>
-      </a>
-      <a class="tag mini" href="personnage.html#classe-voleur" style="--c:#5B4B7A">
-        <div class="tag-head"><span class="slot" aria-hidden="true"></span><p class="role">Discrétion</p></div>
-        <div class="tag-body"><h3>Voleur</h3><p class="pitch">Vous restez dans l'ombre, vous changez de cachette sans bruit et vous frappez quand personne ne regarde.</p><span class="mini-go">Voir la fiche</span></div>
-      </a>
-      <a class="tag mini" href="personnage.html#classe-medecin" style="--c:#B53030">
-        <div class="tag-head"><span class="slot" aria-hidden="true"></span><p class="role">Support</p></div>
-        <div class="tag-body"><h3>Médecin</h3><p class="pitch">Vous gardez le groupe debout : soins, stims et alliés relevés au bon moment.</p><span class="mini-go">Voir la fiche</span></div>
-      </a>
-      <a class="tag mini" href="personnage.html#classe-influenceur" style="--c:#B53A74">
-        <div class="tag-head"><span class="slot" aria-hidden="true"></span><p class="role">Clown</p></div>
-        <div class="tag-body"><h3>Influenceur</h3><p class="pitch">Vous êtes la vedette du groupe. Vous détournez l'attention des ennemis et vous motivez vos alliés.</p><span class="mini-go">Voir la fiche</span></div>
-      </a>
-      <a class="tag mini" href="personnage.html#classe-motard" style="--c:#B4511A">
-        <div class="tag-head"><span class="slot" aria-hidden="true"></span><p class="role">Dégâts</p></div>
-        <div class="tag-body"><h3>Motard</h3><p class="pitch">Vous frappez fort et vous frappez deux fois. Ce que vous trouvez sur le terrain devient une arme.</p><span class="mini-go">Voir la fiche</span></div>
+      <a class="door" href="personnage.html">
+        <span class="door-num">02 · Portique</span>
+        <span class="door-go" aria-hidden="true"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></span>
+        <span class="door-name">Votre survivant</span>
+        <span class="door-sub">Choisir sa classe et s'inscrire</span>
       </a>
     </div>
-    <div class="cta-row" style="margin-top:36px"><a class="btn btn-primary" href="personnage.html">Choisir ma classe et créer mon personnage</a></div>
-  </div>
-</section>
-
-<section class="section cta" aria-labelledby="h-fin">
-  <svg class="drips" viewBox="0 0 1200 170" preserveAspectRatio="xMidYMin slice" aria-hidden="true"><defs><linearGradient id="bl2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5E080C"/><stop offset="1" stop-color="#C8161D"/></linearGradient></defs><g fill="url(#bl2)"><rect width="1200" height="26"/><rect x="60" y="20" width="14" height="70" rx="7.0"/><circle cx="67.0" cy="96.3" r="8.7"/><rect x="150" y="20" width="10" height="40" rx="5.0"/><circle cx="155.0" cy="64.5" r="6.2"/><rect x="230" y="20" width="16" height="110" rx="8.0"/><circle cx="238.0" cy="137.2" r="9.9"/><rect x="330" y="20" width="12" height="55" rx="6.0"/><circle cx="336.0" cy="80.4" r="7.4"/><rect x="420" y="20" width="13" height="90" rx="6.5"/><circle cx="426.5" cy="115.8" r="8.1"/><rect x="520" y="20" width="10" height="35" rx="5.0"/><circle cx="525.0" cy="59.5" r="6.2"/><rect x="610" y="20" width="18" height="125" rx="9.0"/><circle cx="619.0" cy="153.1" r="11.2"/><rect x="700" y="20" width="12" height="60" rx="6.0"/><circle cx="706.0" cy="85.4" r="7.4"/><rect x="790" y="20" width="15" height="100" rx="7.5"/><circle cx="797.5" cy="126.8" r="9.3"/><rect x="880" y="20" width="10" height="45" rx="5.0"/><circle cx="885.0" cy="69.5" r="6.2"/><rect x="960" y="20" width="14" height="85" rx="7.0"/><circle cx="967.0" cy="111.3" r="8.7"/><rect x="1050" y="20" width="17" height="115" rx="8.5"/><circle cx="1058.5" cy="142.7" r="10.5"/><rect x="1130" y="20" width="11" height="50" rx="5.5"/><circle cx="1135.5" cy="75.0" r="6.8"/></g></svg>
-  <div class="wrap">
-    <h2 id="h-fin">Prêt à monter à bord ?</h2>
-    <p>Lisez l'histoire pour entrer dans l'ambiance, ou foncez créer votre personnage.</p>
-    <div class="cta-row">
-      <a class="btn btn-primary" href="histoire.html">Lire l'histoire</a>
-      <a class="btn btn-ghost" href="personnage.html">Créer mon personnage</a>
-    </div>
-  </div>
-</section>
+  </section>
 </main>
+
 <footer class="foot">
-  <div class="wrap">
-    <p>Bienvenue chez les fous, un jeu de rôle post-apocalyptique.</p>
-    <nav aria-label="Pages du site"><a href="index.html">Accueil</a><a href="histoire.html">L'histoire</a><a href="personnage.html">Créer votre perso</a></nav>
-  </div>
+  <span>Bienvenue chez les fous · Campagne de jeu de rôle</span>
+  <span>Zone de confinement 7 · 2039</span>
 </footer>
+
+<div class="grain" aria-hidden="true"></div>
+<div class="scanlines" aria-hidden="true"></div>
+<div class="veil" aria-hidden="true"></div>
 </body>
 </html>
