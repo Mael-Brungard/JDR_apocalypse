@@ -11,13 +11,9 @@ Site statique, sans étape de build. Les bibliothèques viennent d'un CDN : Thre
 
 ## Le lien du Google Sheet
 
-Dans `assets/js/perso.js`, renseignez la constante en haut du fichier :
+Il se trouve dans la constante `SHEET_URL`, en haut de `assets/js/perso.js`. Si elle est vide, le bouton affiche « Inscriptions bientôt ouvertes » et reste désactivé.
 
-```js
-const SHEET_URL = 'https://docs.google.com/spreadsheets/d/.../edit';
-```
-
-Tant qu'elle est vide, le bouton affiche « Inscriptions bientôt ouvertes » et reste désactivé.
+Le lien actuel ouvre la feuille en modification (`/edit?usp=sharing`) : ses droits de partage dans Google Sheets décident de qui peut y écrire.
 
 ## Modifier le contenu
 

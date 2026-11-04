@@ -36,6 +36,7 @@ html {
   color-scheme: dark;
   -webkit-text-size-adjust: 100%;
   scrollbar-color: var(--blood) var(--ink);
+  overflow-x: clip;
 }
 
 body {
@@ -46,6 +47,7 @@ body {
   font-size: 18px;
   line-height: 1.6;
   overflow-x: hidden;
+  overflow-x: clip;
   -webkit-font-smoothing: antialiased;
 }
 
@@ -364,6 +366,8 @@ html.is-leaving .veil { pointer-events: all; }
 }
 .btn:hover::before { transform: scaleY(1); }
 .btn:hover { border-color: var(--blood-hot); color: #fff; }
+.btn:disabled { opacity: .35; cursor: not-allowed; }
+.btn:disabled::before { transform: scaleY(0); }
 .btn--blood { background: var(--blood); border-color: var(--blood-hot); color: #fff; box-shadow: 0 0 40px rgba(179, 18, 26, .35); }
 .btn--blood::before { background: var(--blood-hot); }
 .btn--xl { min-height: 68px; padding: 0 40px; font-size: 16px; }
@@ -484,6 +488,7 @@ html:not(.has-reticle) .hint--fine, html.has-reticle .hint--coarse { display: no
   align-content: center;
   min-height: 115vh;
   padding: 0 var(--gutter);
+  overflow: clip;
   pointer-events: none;
 }
 .h-frag:nth-of-type(odd) { justify-items: end; text-align: right; }
@@ -712,6 +717,13 @@ html:not(.has-reticle) .hint--fine, html.has-reticle .hint--coarse { display: no
 
 .s-final { font-size: clamp(26px, 2vw + 14px, 40px); line-height: 1.3; font-weight: 600; }
 
+/* Sur téléphone, rien ne déborde de la colonne de texte. */
+@media (max-width: 860px) {
+  .s-text::before { inset: 0; background: rgba(6, 4, 4, .78); }
+  .s-radio, .s-comms, .s-scream { margin-left: 0; margin-right: 0; }
+  .s-radio p, .s-comms p { padding: 18px 16px 20px; }
+}
+
 /* Éclaboussure plein écran au coup de feu. */
 .splatter { position: fixed; inset: 0; z-index: 80; pointer-events: none; width: 100vw; height: 100vh; }
 
@@ -790,7 +802,7 @@ html:not(.has-reticle) .hint--fine, html.has-reticle .hint--coarse { display: no
 .pips { position: absolute; right: 24px; bottom: 28px; display: flex; gap: 8px; }
 .pips i { width: 18px; height: 34px; border: 1px solid var(--hazard); background: repeating-linear-gradient(-45deg, var(--hazard) 0 4px, transparent 4px 8px); opacity: .85; }
 .rest-icon { position: absolute; right: 24px; bottom: 20px; width: 70px; height: 70px; opacity: .8; color: var(--bone-3); }
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .vitals { grid-template-columns: 1fr; }
   .vital + .vital { border-left: 0; border-top: 1px solid var(--line); }
 }
@@ -1015,7 +1027,7 @@ html:not(.has-reticle) .hint--fine, html.has-reticle .hint--coarse { display: no
   .pass dl { grid-template-columns: 1fr; }
   .pass-stub { grid-template-columns: auto 1fr; align-items: center; gap: 16px; border-left: 0; border-top: 2px dashed #8a7f70; }
   .pass-stub::before, .pass-stub::after { display: none; }
-  .stamp { right: 18px; top: auto; bottom: 120px; }
+  .stamp { right: 14px; top: 190px; bottom: auto; font-size: 18px; }
 }
 
 /* =========================================================
@@ -1084,7 +1096,7 @@ html:not(.has-reticle) .hint--fine, html.has-reticle .hint--coarse { display: no
 .coach-text { min-height: 3.1em; margin: 0; padding: 14px 16px; font-family: var(--f-mono); font-size: clamp(15px, .5vw + 12px, 18px); line-height: 1.55; color: #cfe9d2; text-shadow: 0 0 12px rgba(125, 255, 138, .2); }
 .coach-next { margin: 0 16px 14px; min-height: 44px; }
 
-.field { grid-area: field; display: grid; grid-template-rows: auto auto 1fr auto; gap: 16px; padding: 14px 16px 18px; }
+.field { grid-area: field; display: grid; align-content: start; gap: 16px; padding: 14px 16px 18px; }
 .order { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; letter-spacing: .08em; }
 .order-round { margin-right: 6px; color: var(--hazard); letter-spacing: .16em; text-transform: uppercase; }
 .order .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border: 1px solid var(--line-2); color: var(--bone-2); transition: all .25s; }
@@ -1156,18 +1168,55 @@ html:not(.has-reticle) .hint--fine, html.has-reticle .hint--coarse { display: no
 @keyframes pulse-die { 50% { transform: scale(1.06); filter: drop-shadow(0 0 18px rgba(255, 43, 43, .7)); } }
 .die.is-nat20 .die-shape { fill: rgba(125, 255, 138, .2); stroke: var(--toxic); }
 .die.is-nat1 .die-shape { fill: rgba(0, 0, 0, .5); stroke: var(--bone-3); }
-.tray-text { display: grid; gap: 4px; min-width: 0; max-width: 460px; }
+.tray-text { display: grid; gap: 10px; min-width: 0; width: min(560px, 100%); }
 .tray-label { margin: 0; font-family: var(--f-mono); font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--bone-3); }
-.tray-formula { min-height: 1.4em; margin: 0; font-family: var(--f-mono); font-size: 16px; color: var(--bone-2); }
-.tray-formula b { color: var(--bone); font-weight: 400; font-size: 1.25em; }
-.tray-verdict { min-height: 1.1em; margin: 0; font-family: var(--f-display); font-size: clamp(24px, 2.4vw, 34px); line-height: 1.05; text-transform: uppercase; }
+
+/* Le calcul, case par case : dé + modificateur = total, contre le seuil. */
+.calc { display: flex; flex-wrap: wrap; align-items: stretch; gap: 6px; min-height: 0; }
+.calc:empty { display: none; }
+.calc-cell { display: grid; align-content: center; justify-items: center; gap: 2px; min-width: 64px; padding: 6px 10px; border: 1px solid var(--line-2); background: rgba(255, 255, 255, .03); text-align: center; }
+.calc-cell small { font-family: var(--f-mono); font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--bone-3); }
+.calc-cell b { font-family: var(--f-display); font-weight: 400; font-size: 30px; line-height: 1; }
+.calc-cell em { font-family: var(--f-mono); font-size: 11px; font-style: normal; color: #7fb6ff; }
+.calc-cell.is-dice { border-color: rgba(255, 43, 43, .5); }
+.calc-cell.is-total { border-color: var(--bone); background: rgba(232, 223, 208, .08); }
+.calc-cell.is-target { border-color: var(--hazard); border-style: dashed; }
+.calc-cell.is-target b { color: var(--hazard); }
+.calc-op { align-self: center; font-family: var(--f-display); font-size: 24px; color: var(--bone-3); }
+.calc-vs { font-family: var(--f-mono); font-size: 12px; letter-spacing: .12em; text-transform: uppercase; }
+.calc-group { display: inline-flex; align-items: stretch; gap: 6px; }
+
+/* La jauge : la barre du total doit dépasser le trait du seuil. */
+.gauge { display: grid; gap: 4px; padding-top: 18px; }
+.gauge-track { position: relative; height: 14px; border: 1px solid var(--line-2); background: rgba(255, 255, 255, .04); }
+.gauge-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: var(--bone-3); }
+.gauge.is-pass .gauge-fill { background: linear-gradient(90deg, #4f9a5a, var(--toxic)); box-shadow: 0 0 14px rgba(125, 255, 138, .45); }
+.gauge.is-fail .gauge-fill { background: linear-gradient(90deg, var(--blood-deep), var(--blood-hot)); }
+.gauge-mark { position: absolute; top: -6px; bottom: -6px; width: 2px; margin-left: -1px; background: var(--hazard); box-shadow: 0 0 8px var(--hazard); }
+.gauge-mark span { position: absolute; bottom: calc(100% + 2px); left: 50%; transform: translateX(-50%); font-family: var(--f-mono); font-size: 10px; letter-spacing: .08em; white-space: nowrap; color: var(--hazard); }
+.gauge-scale { position: relative; height: 12px; font-family: var(--f-mono); font-size: 10px; color: var(--bone-3); }
+.gauge-scale span { position: absolute; top: 0; transform: translateX(-50%); }
+.gauge-scale span:last-child { transform: translateX(-100%); }
+
+.tray-verdict { min-height: 1.1em; margin: 0; font-family: var(--f-display); font-size: clamp(26px, 2.6vw, 38px); line-height: 1.05; text-transform: uppercase; }
+.tray-verdict:empty { display: none; }
 .tray-verdict.is-hit { color: var(--bone); }
 .tray-verdict.is-crit { color: var(--toxic); text-shadow: 0 0 20px rgba(125, 255, 138, .5); }
 .tray-verdict.is-miss { color: var(--bone-3); }
 .tray-verdict.is-bad { color: var(--blood-hot); }
 .tray-verdict.is-heal { color: var(--toxic); }
-.tray-alt { min-height: 1em; margin: 0; font-family: var(--f-mono); font-size: 12px; color: #7fb6ff; }
-.tray-text .btn { justify-self: start; margin-top: 6px; }
+.tray-explain { margin: 0; font-size: 18px; line-height: 1.45; color: var(--bone-2); }
+.tray-explain:empty { display: none; }
+.tray-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+.tray-btns:not(:has(:not([hidden]))) { display: none; }
+.tray-rule { margin: -6px 0 0; font-size: 12px; letter-spacing: .06em; line-height: 1.5; text-align: center; color: var(--bone-3); }
+.tray-rule b { font-weight: 400; color: var(--hazard); }
+
+.coach-settings { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.pace { display: inline-flex; align-items: center; border: 1px solid rgba(125, 255, 138, .3); }
+.pace span { padding: 0 8px; font-size: 10px; color: var(--bone-3); }
+.pace button { min-height: 32px; padding: 0 9px; border-left: 1px solid rgba(125, 255, 138, .2); font-family: var(--f-mono); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--bone-3); }
+.pace button[aria-pressed="true"] { background: rgba(125, 255, 138, .16); color: var(--toxic); }
 
 .bar { grid-area: bar; display: grid; gap: 12px; padding: 14px 16px 16px; }
 .bar-head { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; }
@@ -1228,9 +1277,13 @@ html:not(.has-reticle) .hint--fine, html.has-reticle .hint--coarse { display: no
   .basics, .pick-grid { grid-template-columns: 1fr; }
   .pick-card { min-height: 0; }
   .unit { width: 100%; }
-  .tray { flex-direction: column; text-align: center; }
-  .tray-text .btn { justify-self: center; }
-  .die { width: 104px; height: 104px; }
+  .tray { flex-direction: column; }
+  .tray-label, .tray-verdict { text-align: center; }
+  .calc, .tray-btns { justify-content: center; }
+  .calc-cell { min-width: 54px; padding: 5px 7px; }
+  .calc-cell b { font-size: 24px; }
+  .die { width: 96px; height: 96px; }
+  .tray-btns .btn { flex: 1 1 100%; }
 }
 
 .sim-end { padding-top: 130px; padding-bottom: 120px; }

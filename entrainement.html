@@ -86,7 +86,18 @@
   <!-- 2. Le combat -->
   <section class="sim-arena" id="arena" hidden aria-label="Combat">
     <div class="coach" id="coach">
-      <div class="coach-head mono"><span><span class="rec"></span>Canal 7 · Capt. Trevor</span><button class="coach-toggle" id="guide-toggle" type="button" aria-pressed="true">Conseils : activés</button></div>
+      <div class="coach-head mono">
+        <span><span class="rec"></span>Canal 7 · Capt. Trevor</span>
+        <div class="coach-settings">
+          <div class="pace" role="group" aria-label="Rythme des jets de dés">
+            <span>Rythme</span>
+            <button type="button" data-speed="step" aria-pressed="true">Pas à pas</button>
+            <button type="button" data-speed="normal" aria-pressed="false">Normal</button>
+            <button type="button" data-speed="fast" aria-pressed="false">Rapide</button>
+          </div>
+          <button class="coach-toggle" id="guide-toggle" type="button" aria-pressed="true">Conseils : activés</button>
+        </div>
+      </div>
       <p class="coach-text" id="coach-text" aria-live="polite"></p>
       <button class="btn btn--blood coach-next" id="coach-next" type="button" hidden>Compris</button>
     </div>
@@ -103,12 +114,20 @@
         </div>
         <div class="tray-text" aria-live="polite">
           <p class="tray-label" id="tray-label">En attente du contact</p>
-          <p class="tray-formula" id="tray-formula"></p>
+          <div class="calc" id="calc"></div>
+          <div class="gauge" id="gauge" hidden aria-hidden="true">
+            <div class="gauge-track"><i class="gauge-fill" id="gauge-fill"></i><i class="gauge-mark" id="gauge-mark"><span id="gauge-mark-label"></span></i></div>
+            <div class="gauge-scale"><span style="left:4%">1</span><span style="left:20%">5</span><span style="left:40%">10</span><span style="left:60%">15</span><span style="left:80%">20</span><span style="left:100%">25</span></div>
+          </div>
           <p class="tray-verdict" id="tray-verdict"></p>
-          <p class="tray-alt" id="die-alt"></p>
-          <button class="btn btn--blood" id="roll-btn" type="button" hidden>Lancer le d20</button>
+          <p class="tray-explain" id="tray-explain"></p>
+          <div class="tray-btns">
+            <button class="btn btn--blood" id="roll-btn" type="button" hidden>Lancer le d20</button>
+            <button class="btn" id="continue-btn" type="button" hidden>Continuer <span class="arrow" aria-hidden="true">→</span></button>
+          </div>
         </div>
       </div>
+      <p class="tray-rule mono">Pour toucher : <b>d20 + modificateur ≥ CA</b> de la cible · un 20 naturel touche toujours · un 1 naturel rate toujours</p>
 
       <div class="side side--allies" id="allies"></div>
     </div>

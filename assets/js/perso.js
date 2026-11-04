@@ -4,7 +4,7 @@ import { createWorld, followScroll } from './world.js';
 import { STATS, STAT_NAME, CLASSES, ICONS, signed } from './classes.js';
 
 // Lien du Google Sheet d'inscription des joueurs. Tant qu'il est vide, le bouton reste désactivé.
-const SHEET_URL = '';
+const SHEET_URL = 'https://docs.google.com/spreadsheets/d/1zpGybjiF-GCywaXX0wRc76LTbpYbiX41f9Ips2lJ7aA/edit?usp=sharing';
 
 const { gsap } = window;
 initCore({ ambient: { drone: 0.7, wind: 0.7 } });

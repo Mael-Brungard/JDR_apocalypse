@@ -44,6 +44,9 @@ const WEAPONS = {
 const ZOMBIE = { name: 'Rôdeur', pv: 11, ca: 8, attack: 3, dmg: [1, 4], dmgFlat: 1, stats: { DEX: -1, SAG: -2, CHA: -3 }, intScore: 1 };
 const SAM = { name: 'Sam', sub: 'Civil', pv: 10, ca: 10, attack: 1, dmg: [1, 4], dmgFlat: 1, stats: { DEX: 1 } };
 
+// Rythme des jets : « pas à pas » attend un clic après chaque résultat.
+const SPEEDS = { step: 0, normal: 2200, fast: 800 };
+
 const ART = {
   zombie: '<svg viewBox="0 0 64 128"><ellipse cx="38" cy="20" rx="7" ry="8.5" transform="rotate(22 38 20)"/><path d="M23 31L44 28L40 72L25 74Z"/><g fill="none" stroke="currentColor" stroke-linecap="round"><path d="M41 33L52 50L58 63" stroke-width="6.5"/><path d="M25 34L18 57L21 82" stroke-width="6"/><path d="M29 72L25 99L22 125" stroke-width="7.5"/><path d="M37 72L44 98L42 125" stroke-width="7.5"/></g></svg>',
   civil: '<svg viewBox="0 0 64 128"><ellipse cx="32" cy="17" rx="7" ry="8"/><path d="M21 28H43L41 74H23Z"/><g fill="none" stroke="currentColor" stroke-linecap="round"><path d="M22 31L18 56L20 76" stroke-width="6"/><path d="M42 31L46 56L44 76" stroke-width="6"/><path d="M28 73L27 100L27 125" stroke-width="7.5"/><path d="M36 73L37 100L37 125" stroke-width="7.5"/></g></svg>',
@@ -61,17 +64,23 @@ const SHAPES = {
 const $ = (id) => document.getElementById(id);
 const wait = (ms) => new Promise((r) => setTimeout(r, REDUCED ? Math.min(ms, 120) : ms));
 const d = (n) => 1 + Math.floor(Math.random() * n);
+const diceText = ([n, s], flat = 0, statLabel = '') => `${n}d${s}${statLabel ? ` + ${statLabel}` : flat ? ` + ${flat}` : ''}`;
+
 // Sur écran étroit, le plateau est empilé : on amène sous les yeux ce qui attend le joueur.
 const reveal = (el) => {
   if (innerWidth >= 1100) return;
   if (lenis) lenis.scrollTo(el, { offset: -90, duration: 0.8 });
   else el.scrollIntoView({ block: 'center', behavior: REDUCED ? 'auto' : 'smooth' });
 };
-const diceText = ([n, s], flat = 0, statLabel = '') => `${n}d${s}${statLabel ? ` + ${statLabel}` : flat ? ` + ${flat}` : ''}`;
+
+const store = {
+  get(k) { try { return localStorage.getItem(k); } catch { return null; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch { /* stockage indisponible */ } },
+};
 
 const sfx = {
   dice() {
-    for (let i = 0; i < 6; i++) audio.burst({ type: 'bandpass', freq: 1800 + Math.random() * 1500, q: 4, peak: 0.12, attack: 0.001, decay: 0.04, delay: i * 0.07 + Math.random() * 0.03 });
+    for (let i = 0; i < 7; i++) audio.burst({ type: 'bandpass', freq: 1800 + Math.random() * 1500, q: 4, peak: 0.12, attack: 0.001, decay: 0.04, delay: i * 0.12 + Math.random() * 0.04 });
   },
   hit() {
     audio.tone({ freq: 130, to: 45, peak: 0.5, decay: 0.25 });
@@ -95,11 +104,13 @@ const die = $('die');
 const dieShape = $('die-shape');
 const dieNum = $('die-num');
 const dieType = $('die-type');
-const dieAlt = $('die-alt');
 const trayLabel = $('tray-label');
-const trayFormula = $('tray-formula');
+const calcEl = $('calc');
+const gauge = $('gauge');
 const trayVerdict = $('tray-verdict');
+const trayExplain = $('tray-explain');
 const rollBtn = $('roll-btn');
+const continueBtn = $('continue-btn');
 const actionsEl = $('actions');
 const endBtn = $('end-turn');
 const tokensEl = $('tokens');
@@ -109,6 +120,7 @@ const askEl = $('ask');
 const logEl = $('log');
 
 let S = null;
+let speed = SPEEDS[store.get('bclf-speed')] !== undefined ? store.get('bclf-speed') : 'step';
 
 // ---------- Écran de choix ----------
 
@@ -156,6 +168,30 @@ if (wantedCard) {
   setTimeout(() => wantedCard.scrollIntoView({ block: 'center', behavior: REDUCED ? 'auto' : 'smooth' }), 900);
 }
 
+// ---------- Réglages : rythme et conseils ----------
+
+const paceBtns = [...document.querySelectorAll('.pace button')];
+function setSpeed(v) {
+  speed = v;
+  store.set('bclf-speed', v);
+  paceBtns.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.speed === v)));
+  // Passer en mode automatique libère un « Continuer » en attente.
+  if (v !== 'step' && !continueBtn.hidden) continueBtn.click();
+}
+paceBtns.forEach((b) => b.addEventListener('click', () => setSpeed(b.dataset.speed)));
+setSpeed(speed);
+
+guideToggle.addEventListener('click', () => {
+  if (!S) return;
+  S.guided = !S.guided;
+  guideToggle.setAttribute('aria-pressed', String(S.guided));
+  guideToggle.textContent = `Conseils : ${S.guided ? 'activés' : 'coupés'}`;
+  if (!S.guided) {
+    coachText.textContent = 'Conseils coupés. Vous êtes seul.';
+    if (!coachNext.hidden) coachNext.click();
+  }
+});
+
 // ---------- Conseils du Capitaine Trevor ----------
 
 let typing = null;
@@ -197,22 +233,13 @@ function hint(key, text, opts) {
   return say(text, opts);
 }
 
-guideToggle.addEventListener('click', () => {
-  S.guided = !S.guided;
-  guideToggle.setAttribute('aria-pressed', String(S.guided));
-  guideToggle.textContent = `Conseils : ${S.guided ? 'activés' : 'coupés'}`;
-  if (!S.guided) {
-    coachText.textContent = 'Conseils coupés. Vous êtes seul.';
-    if (!coachNext.hidden) coachNext.click();
-  }
-});
-
 // ---------- Unités ----------
 
 const mod = (u, stat) => u.stats[stat] ?? 0;
 const ca = (u) => u.ca + (u.status.defensive ? RULES.defensive : 0);
 const alive = (u) => u.pv > 0;
 const liveZombies = () => S.zombies.filter(alive);
+const who = (u) => (u === S.hero ? 'vous' : u.name);
 
 function card(u) {
   const el = document.createElement('div');
@@ -259,7 +286,7 @@ function float(u, text, kind = 'dmg') {
   f.className = `float float--${kind}`;
   f.textContent = text;
   u.el.appendChild(f);
-  gsap.fromTo(f, { y: 0, opacity: 1, scale: 0.6 }, { y: -64, opacity: 0, scale: 1.15, duration: 1.5, ease: 'power2.out', onComplete: () => f.remove() });
+  gsap.fromTo(f, { y: 0, opacity: 1, scale: 0.6 }, { y: -64, opacity: 0, scale: 1.15, duration: 1.8, ease: 'power2.out', onComplete: () => f.remove() });
 }
 
 function jolt(u) {
@@ -284,7 +311,17 @@ function renderOrder() {
     + S.order.map((u) => `<span class="chip${alive(u) ? '' : ' is-out'}" data-id="${u.id}">${u.name}<b>${u.init ?? ''}</b></span>`).join('');
 }
 
-// ---------- Dés ----------
+// ---------- Plateau : dés, calcul, explication ----------
+
+function clearTray(label) {
+  trayLabel.textContent = label;
+  calcEl.innerHTML = '';
+  gauge.hidden = true;
+  trayVerdict.textContent = '';
+  trayVerdict.className = 'tray-verdict';
+  trayExplain.textContent = '';
+  die.classList.remove('is-nat20', 'is-nat1');
+}
 
 function tumble(sides, rolls, adv) {
   const final = adv ? Math.max(...rolls) : rolls.reduce((a, b) => a + b, 0);
@@ -293,26 +330,49 @@ function tumble(sides, rolls, adv) {
     let n = 0;
     const tick = setInterval(() => {
       dieNum.textContent = d(sides);
-      if (++n >= (REDUCED ? 1 : 12)) {
+      if (++n >= (REDUCED ? 1 : 18)) {
         clearInterval(tick);
         dieNum.textContent = final;
         die.classList.remove('is-rolling');
         die.classList.toggle('is-nat20', sides === 20 && final === 20);
         die.classList.toggle('is-nat1', sides === 20 && final === 1);
-        if (!REDUCED) gsap.fromTo(die, { scale: 1.25 }, { scale: 1, duration: 0.45, ease: 'back.out(3)' });
+        if (!REDUCED) gsap.fromTo(die, { scale: 1.3 }, { scale: 1, duration: 0.5, ease: 'back.out(3)' });
         done(final);
       }
-    }, 50);
+    }, 55);
   });
 }
 
-// Lance des dés dans le plateau et affiche le calcul. `extra` : dés bonus (stim, motivation).
-async function roll({ label, count = 1, sides = 20, adv = false, mod: m = 0, modLabel = '', extra = [], user = false }) {
-  trayLabel.textContent = label;
-  trayFormula.innerHTML = '';
-  trayVerdict.textContent = '';
-  trayVerdict.className = 'tray-verdict';
-  dieAlt.textContent = '';
+// Affiche le calcul case par case : [dé] + [modificateur] = [total] contre [seuil].
+function showCalc(cells, total, against, againstLabel) {
+  const parts = cells.map((c, i) => {
+    const op = i === 0 ? '' : `<span class="calc-op">${c.value < 0 ? '−' : '+'}</span>`;
+    const value = i === 0 ? c.value : Math.abs(c.value);
+    return `${op}<span class="calc-cell${c.dice ? ' is-dice' : ''}"><small>${c.label}</small><b>${value}</b>${c.sub ? `<em>${c.sub}</em>` : ''}</span>`;
+  });
+  parts.push(`<span class="calc-op">=</span><span class="calc-cell is-total"><small>Total</small><b>${total}</b></span>`);
+  if (against !== undefined) parts.push(`<span class="calc-group"><span class="calc-op calc-vs">contre</span><span class="calc-cell is-target"><small>${againstLabel}</small><b>${against}</b></span></span>`);
+  calcEl.innerHTML = parts.join('');
+  if (!REDUCED) gsap.fromTo(calcEl.children, { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.35, stagger: 0.12, ease: 'power2.out' });
+
+  gauge.hidden = against === undefined;
+  if (against !== undefined) {
+    const pct = (v) => `${(Math.max(0, Math.min(v, 25)) / 25) * 100}%`;
+    const fill = $('gauge-fill');
+    const mark = $('gauge-mark');
+    mark.style.left = pct(against);
+    $('gauge-mark-label').textContent = `${againstLabel} ${against}`;
+    gauge.classList.toggle('is-pass', total >= against);
+    gauge.classList.toggle('is-fail', total < against);
+    if (REDUCED) fill.style.width = pct(total);
+    else gsap.fromTo(fill, { width: '0%' }, { width: pct(total), duration: 0.9, delay: 0.3, ease: 'power3.out' });
+  }
+}
+
+// Lance des dés dans le plateau. `extra` : dés bonus (stim, motivation).
+// `against` : le seuil à atteindre (CA ou DD), affiché avec une jauge.
+async function roll({ label, count = 1, sides = 20, adv = false, mod: m = 0, modLabel = '', extra = [], user = false, against, againstLabel = 'CA' }) {
+  clearTray(label);
   dieShape.setAttribute('points', SHAPES[sides] || SHAPES[20]);
   dieType.textContent = `${adv ? 2 : count}d${sides}`;
   if (user) {
@@ -328,24 +388,50 @@ async function roll({ label, count = 1, sides = 20, adv = false, mod: m = 0, mod
     });
     die.classList.remove('is-waiting');
     rollBtn.hidden = true;
+  } else {
+    reveal($('tray'));
+    await wait(speed === 'fast' ? 150 : 450);
   }
   const rolls = Array.from({ length: adv ? 2 : count }, () => d(sides));
   sfx.dice();
   const kept = await tumble(sides, rolls, adv);
-  const extras = extra.map((e) => ({ ...e, value: d(e.sides) }));
+  const extras = extra.map((e) => ({ label: e.label, value: d(e.sides) }));
   const total = kept + m + extras.reduce((a, e) => a + e.value, 0);
-  let f = adv ? `2d20 (${rolls.join(' / ')}) → ${kept}` : `${count}d${sides} (${rolls.join(' + ')})`;
-  if (modLabel) f += ` ${m < 0 ? '−' : '+'} ${Math.abs(m)} ${modLabel}`;
-  extras.forEach((e) => { f += ` + ${e.value} ${e.label}`; });
-  f += ` = <b>${total}</b>`;
-  trayFormula.innerHTML = f;
-  if (adv) dieAlt.textContent = 'Avantage : on garde le meilleur des deux dés.';
+
+  const diceCell = { dice: true, label: adv ? '2d20, le meilleur' : `${count}d${sides}`, value: kept };
+  if (adv) diceCell.sub = rolls.join(' et ');
+  else if (count > 1) diceCell.sub = rolls.join(' + ');
+  const cells = [diceCell];
+  if (modLabel) cells.push({ label: modLabel, value: m });
+  extras.forEach((e) => cells.push({ label: `${e.label} (1d4)`, value: e.value }));
+  showCalc(cells, total, against, againstLabel);
   return { rolls, kept, total, nat: sides === 20 ? kept : 0 };
 }
 
-function verdict(text, kind) {
-  trayVerdict.textContent = text;
+// Le verdict en gros, puis une phrase qui explique ce que veut dire le résultat.
+function explain(title, text, kind) {
+  trayVerdict.textContent = title;
   trayVerdict.className = `tray-verdict is-${kind}`;
+  trayExplain.textContent = text;
+}
+
+// Laisse le temps de lire : un clic en « pas à pas », sinon une courte pause.
+async function pace() {
+  if (speed !== 'step') { await wait(SPEEDS[speed]); return; }
+  continueBtn.hidden = false;
+  continueBtn.focus({ preventScroll: true });
+  reveal($('tray'));
+  await new Promise((r) => continueBtn.addEventListener('click', r, { once: true }));
+  continueBtn.hidden = true;
+}
+
+// Explication commune à tous les jets contre un seuil.
+// `threshold` nomme le seuil : « la CA de Rôdeur 1 », « votre CA »…
+function versus(total, against, nat, threshold) {
+  if (nat === 20) return '20 naturel sur le dé : ça touche toujours, quel que soit le total. C’est un coup critique.';
+  if (nat === 1) return '1 naturel sur le dé : c’est raté d’office, même si le total suffisait.';
+  if (total >= against) return `${total} est supérieur ou égal à ${threshold} (${against}) : c’est réussi.`;
+  return `${total} est en dessous de ${threshold} (${against}) : il manquait ${against - total}. C’est raté.`;
 }
 
 // ---------- Choix du joueur ----------
@@ -501,8 +587,10 @@ function heroActions() {
         h.status.defensive = true;
         render(h);
         float(h, `+${RULES.defensive} CA`, 'buff');
+        clearTray('Position défensive');
+        explain(`CA ${ca(h)}`, `Vous levez le bouclier : ${h.ca} + ${RULES.defensive} = ${ca(h)}. Les rôdeurs devront faire ${ca(h)} ou plus pour vous toucher.`, 'heal');
         log(`Vous levez le bouclier : CA ${ca(h)}.`, 'is-buff');
-        await wait(500);
+        await pace();
       },
     });
   }
@@ -575,16 +663,18 @@ function heroActions() {
 async function heroAttack(t) {
   const h = S.hero;
   const w = S.weapon;
+  const target = ca(t);
   const adv = !!t.status.exposed || !!h.status.hidden;
   const extra = h.status.stim ? [{ label: 'stim', sides: 4 }] : [];
   const sneaky = S.cls.id === 'voleur' && (t.status.distracted || h.status.hidden) && !S.sneakUsed;
   const r = await roll({
-    label: `Vous attaquez ${t.name} (${w.name})`,
-    adv, mod: mod(h, w.stat), modLabel: `(${STAT_NAME[w.stat]})`, extra, user: true,
+    label: `Votre attaque contre ${t.name} · ${w.name}`,
+    adv, mod: mod(h, w.stat), modLabel: STAT_NAME[w.stat], extra, user: true,
+    against: target, againstLabel: 'CA',
   });
   let total = r.total;
   const crit = r.nat === 20;
-  let hit = r.nat !== 1 && (crit || total >= ca(t));
+  let hit = r.nat !== 1 && (crit || total >= target);
   if (h.status.hidden) {
     delete h.status.hidden;
     render(h);
@@ -592,40 +682,39 @@ async function heroAttack(t) {
 
   // Motard : rattraper un échec avec une arme improvisée.
   if (!hit && r.nat !== 1 && w.improvised && S.cls.id === 'motard' && S.fatigue < BASE.fatigueMax) {
-    verdict(`${total} contre CA ${ca(t)} : raté de ${ca(t) - total}`, 'miss');
-    const ok = await ask("Pro de l'improvisation", `Raté de ${ca(t) - total}. Ajouter 1d4 au jet pour 1 fatigue ?`, 'Ajouter 1d4', 'Laisser');
+    explain('Raté de peu ?', versus(total, target, r.nat, `la CA de ${t.name}`), 'miss');
+    const ok = await ask("Pro de l'improvisation", `Il vous manque ${target - total}. Ajouter 1d4 au jet pour 1 fatigue ?`, 'Ajouter 1d4', 'Laisser');
     if (ok) {
       pay(1);
-      const more = await roll({ label: "Pro de l'improvisation", sides: 4 });
+      const more = await roll({ label: "Pro de l'improvisation : +1d4 au jet", sides: 4 });
+      showCalc([{ label: 'Jet d’attaque', value: total }, { dice: true, label: '1d4', value: more.total }], total + more.total, target, 'CA');
       total += more.total;
-      hit = total >= ca(t);
-      trayFormula.innerHTML = `Jet d'attaque ${r.total} + ${more.total} (1d4) = <b>${total}</b>`;
+      hit = total >= target;
     }
   }
 
   if (!hit) {
     S.stats.misses++;
-    verdict(r.nat === 1 ? '1 naturel : échec automatique' : `${total} < CA ${ca(t)} : raté`, 'miss');
+    explain(r.nat === 1 ? 'Échec automatique' : 'Raté', versus(total, target, r.nat, `la CA de ${t.name}`), 'miss');
     sfx.miss();
     float(t, 'Raté', 'miss');
-    log(`Vous attaquez ${t.name} : ${total} contre CA ${ca(t)}, <b>raté</b>.`, 'is-miss');
-    await hint('first-miss', `Raté : votre total (${total}) est sous sa CA (${ca(t)}). Un 1 naturel rate toujours, un 20 naturel touche toujours.`);
-    await wait(500);
+    log(`Vous attaquez ${t.name} : ${total} contre CA ${target}, <b>raté</b>.`, 'is-miss');
+    hint('first-miss', 'Raté, ça arrive : même avec un bon modificateur, c’est le d20 qui décide.');
+    await pace();
     return;
   }
 
   S.stats.hits++;
-  verdict(crit ? '20 naturel : coup critique !' : `${total} ≥ CA ${ca(t)} : touché`, crit ? 'crit' : 'hit');
+  explain(crit ? 'Coup critique' : 'Touché', `${versus(total, target, r.nat, `la CA de ${t.name}`)} On lance maintenant les dégâts${crit ? ', avec deux fois plus de dés' : ''}.`, crit ? 'crit' : 'hit');
   if (crit) audio.stinger(0.4);
-  await hint('first-hit', `Touché : ${total}, c'est au moins sa CA de ${ca(t)}.${adv ? ' Avec l’avantage, vous avez gardé le meilleur de deux d20.' : ''} Maintenant, les dégâts.`);
-  await wait(450);
+  hint('first-hit', 'Touché ! Pour savoir si ça touche, comparez le total à la CA : égal ou au-dessus, c’est gagné.');
+  await pace();
 
-  const statMod = w.flat ? 0 : mod(h, w.stat);
-  const flat = w.flat || statMod;
+  const flat = w.flat || mod(h, w.stat);
   const dmg = await roll({
-    label: crit ? 'Dégâts critiques : dés doublés' : `Dégâts · ${w.name}`,
+    label: crit ? `Dégâts critiques · ${w.name}` : `Dégâts · ${w.name}`,
     count: w.dice[0] * (crit ? 2 : 1), sides: w.dice[1],
-    mod: flat, modLabel: w.flat ? '(Maîtrise)' : `(${STAT_NAME[w.stat]})`,
+    mod: flat, modLabel: w.flat ? 'Maîtrise' : STAT_NAME[w.stat],
   });
   let amount = Math.max(1, dmg.total);
 
@@ -635,17 +724,18 @@ async function heroAttack(t) {
     if (ok) {
       S.sneakUsed = true;
       pay(1);
-      const s = await roll({ label: 'Attaque sournoise', sides: 6 });
-      trayFormula.innerHTML = `Dégâts ${amount} + ${s.total} (sournoise) = <b>${amount + s.total}</b>`;
+      const s = await roll({ label: 'Attaque sournoise : +1d6 dégâts', sides: 6 });
+      showCalc([{ label: 'Dégâts de l’arme', value: amount }, { dice: true, label: 'Sournoise 1d6', value: s.total }], amount + s.total);
       amount += s.total;
     }
   }
 
-  verdict(`${amount} dégâts`, 'hit');
-  log(`Vous touchez ${t.name} (${total} contre CA ${ca(t)}) : <b>${amount} dégâts</b>.`, 'is-hit');
+  const before = t.pv;
   damage(t, amount);
-  await hint('first-damage', 'Les dégâts : le dé de votre arme plus votre modificateur. À 0 PV, un rôdeur tombe.');
-  await wait(600);
+  explain(`${amount} dégâts`, `${t.name} perd ${amount} PV : il passe de ${before} à ${t.pv}.${alive(t) ? '' : ' À 0, il tombe.'}`, 'hit');
+  log(`Vous touchez ${t.name} (${total} contre CA ${target}) : <b>${amount} dégâts</b>.`, 'is-hit');
+  hint('first-damage', 'Les dégâts : le dé de l’arme plus votre modificateur, retirés des PV de la cible.');
+  await pace();
 
   // Motard : achever pour souffler.
   if (!alive(t) && S.cls.id === 'motard' && S.bonus) {
@@ -655,7 +745,6 @@ async function heroAttack(t) {
       tokens();
       pay(-1);
       log('Vous achevez le rôdeur : −1 fatigue.', 'is-buff');
-      await wait(500);
     }
   }
 }
@@ -681,64 +770,65 @@ function damage(u, n) {
 }
 
 async function provoke(t) {
-  const r = await roll({ label: `${t.name} : jet de Sagesse DD ${RULES.provokeDD}`, mod: mod(t, 'SAG'), modLabel: '(Sagesse)' });
-  if (r.total < RULES.provokeDD) {
+  const r = await roll({ label: `${t.name} : jet de Sagesse pour résister`, mod: mod(t, 'SAG'), modLabel: 'Sagesse', against: RULES.provokeDD, againstLabel: 'DD' });
+  const resists = r.total >= RULES.provokeDD;
+  if (!resists) {
     t.status.provoked = true;
-    verdict(`${r.total} < DD ${RULES.provokeDD} : provoqué`, 'hit');
+    explain('Provoqué', `${r.total} est en dessous du DD ${RULES.provokeDD} : il rate son jet. Ce tour-ci, il ne peut attaquer que vous.`, 'hit');
     log(`${t.name} rate son jet (${r.total}) : il ne voit plus que vous.`, 'is-buff');
   } else {
-    verdict(`${r.total} ≥ DD ${RULES.provokeDD} : il résiste`, 'miss');
+    explain('Il résiste', `${r.total} atteint le DD ${RULES.provokeDD} : il réussit son jet et ignore la provocation.`, 'miss');
     log(`${t.name} résiste à la provocation (${r.total}).`, 'is-miss');
   }
   S.hero.status.defensive = true;
   render(t);
   render(S.hero);
   float(S.hero, `+${RULES.defensive} CA`, 'buff');
-  await hint('provoke', `Le DD, c'est le seuil à battre pour résister. Et vous passez en position défensive : +${RULES.defensive} CA, mais pas d'attaque jusqu'à votre prochain tour.`);
-  await wait(500);
+  hint('provoke', `Le DD, c'est le seuil que l'ennemi doit atteindre pour résister. Et vous passez en position défensive : +${RULES.defensive} CA, mais pas d'attaque jusqu'à votre prochain tour.`);
+  await pace();
 }
 
 async function craft() {
-  const r = await roll({ label: 'Arme improvisée : qualité', sides: 4, user: true });
+  const r = await roll({ label: 'Arme improvisée : un d4 décide de la qualité', sides: 4, user: true });
   const good = r.total >= 3;
   S.crafted = true;
   S.weapon = { name: good ? 'Lance de fortune' : 'Masse bricolée', dice: [1, good ? 6 : 4], flat: RULES.maitrise, stat: 'FOR', improvised: true };
-  verdict(`${r.total} : ${good ? '1d6' : '1d4'} + Maîtrise (${RULES.maitrise})`, 'hit');
+  explain(S.weapon.name, `${r.total} : ${good ? 'sur 3 ou 4' : 'sur 1 ou 2'}, l'arme fait ${good ? '1d6' : '1d4'} + Maîtrise (+${RULES.maitrise}) de dégâts. Vos attaques utilisent la Force.`, 'hit');
   log(`Vous fabriquez une ${S.weapon.name.toLowerCase()} : ${diceText(S.weapon.dice, RULES.maitrise)} dégâts.`, 'is-buff');
-  await hint('craft', `La Maîtrise vaut +${RULES.maitrise} au niveau 1 : vos dégâts ne dépendent plus de votre Force.`);
-  await wait(500);
+  hint('craft', `La Maîtrise vaut +${RULES.maitrise} au niveau 1 : vos dégâts ne dépendent plus de votre Force.`);
+  await pace();
 }
 
 async function weakPoint(t) {
-  const me = await roll({ label: 'Votre jet d’Intelligence', mod: mod(S.hero, 'INT'), modLabel: '(Intelligence)', user: true });
-  await wait(400);
-  const them = await roll({ label: `${t.name} : jet de Charisme`, mod: mod(t, 'CHA'), modLabel: '(Charisme)' });
+  const me = await roll({ label: 'Votre jet d’Intelligence', mod: mod(S.hero, 'INT'), modLabel: 'Intelligence', user: true });
+  explain(`Vous : ${me.total}`, `Maintenant, ${t.name} lance son Charisme. Le plus haut des deux l'emporte.`, 'hit');
+  await pace();
+  const them = await roll({ label: `${t.name} : jet de Charisme`, mod: mod(t, 'CHA'), modLabel: 'Charisme' });
   if (me.total >= them.total) {
     t.status.exposed = S.round + 1;
-    verdict(`${me.total} contre ${them.total} : faille trouvée`, 'hit');
+    explain('Faille trouvée', `Vous ${me.total}, lui ${them.total} : vous l'emportez. Jusqu'à la fin du prochain tour, les attaques contre lui ont l'avantage (deux d20, on garde le meilleur).`, 'hit');
     log(`Point faible repéré sur ${t.name} (${me.total} contre ${them.total}) : avantage contre lui.`, 'is-buff');
   } else {
-    verdict(`${me.total} contre ${them.total} : rien trouvé`, 'miss');
+    explain('Rien trouvé', `Vous ${me.total}, lui ${them.total} : il l'emporte. Pas de faille cette fois.`, 'miss');
     log(`Pas de faille visible sur ${t.name} (${me.total} contre ${them.total}).`, 'is-miss');
   }
   render(t);
-  await hint('weak', 'Un jet opposé : chacun lance son d20, le plus haut gagne. L’avantage fait lancer deux d20 et garder le meilleur.');
-  await wait(500);
+  await pace();
 }
 
 async function heal(t) {
   S.kit--;
-  const r = await roll({ label: `Kit de soin sur ${t.name}`, sides: 8, mod: mod(S.hero, 'SAG'), modLabel: '(Sagesse)', user: true });
+  const r = await roll({ label: `Kit de soin sur ${who(t)}`, sides: 8, mod: mod(S.hero, 'SAG'), modLabel: 'Sagesse', user: true });
   const n = Math.max(1, r.total);
   const before = t.pv;
   t.pv = Math.min(t.max, t.pv + n);
-  verdict(`+${t.pv - before} PV`, 'heal');
   float(t, `+${t.pv - before}`, 'heal');
   sfx.heal();
   render(t);
   renderOrder();
-  log(`Vous soignez ${t.name} : +${t.pv - before} PV.`, 'is-heal');
-  await wait(500);
+  explain(`+${t.pv - before} PV`, `${t === S.hero ? 'Vous passez' : `${t.name} passe`} de ${before} à ${t.pv} PV${t.pv === t.max ? ', le maximum' : ''}.`, 'heal');
+  log(`Vous soignez ${who(t)} : +${t.pv - before} PV.`, 'is-heal');
+  await pace();
 }
 
 async function stabilize(t) {
@@ -747,22 +837,23 @@ async function stabilize(t) {
   sfx.heal();
   render(t);
   renderOrder();
-  verdict(`${t.name} reprend connaissance`, 'heal');
+  clearTray('Stabiliser');
+  explain('Stabilisé', `${t.name} reprend connaissance à 1 PV. Il pourra de nouveau agir à son tour.`, 'heal');
   log(`Vous stabilisez ${t.name} : il revient à 1 PV.`, 'is-heal');
-  await wait(600);
+  await pace();
 }
 
 async function stim(t) {
   S.stims--;
-  const r = await roll({ label: `Stim pour ${t.name}`, sides: 4 });
+  const r = await roll({ label: `Stim pour ${who(t)}`, sides: 4 });
   t.pv += r.total;
   t.status.stim = RULES.stimRounds;
   float(t, `+${r.total}`, 'heal');
   sfx.heal();
   render(t);
-  verdict(`+${r.total} PV et +1d4 aux jets`, 'heal');
-  log(`Stim pour ${t.name} : +${r.total} PV, +1d4 à ses jets pendant ${RULES.stimRounds} tours.`, 'is-heal');
-  await wait(500);
+  explain(`+${r.total} PV`, `Et pendant ${RULES.stimRounds} tours, ${t === S.hero ? 'vos jets gagnent' : `les jets de ${t.name} gagnent`} un bonus de 1d4.`, 'heal');
+  log(`Stim pour ${who(t)} : +${r.total} PV, +1d4 aux jets pendant ${RULES.stimRounds} tours.`, 'is-heal');
+  await pace();
 }
 
 async function motivate(t) {
@@ -770,9 +861,10 @@ async function motivate(t) {
   render(t);
   float(t, '+1d4', 'buff');
   audio.tone({ type: 'triangle', freq: 660, to: 990, peak: 0.08, decay: 0.3 });
-  verdict('Sam ajoutera 1d4 à son prochain jet', 'heal');
+  clearTray('Motivation');
+  explain('Sam est motivé', 'À son prochain jet, Sam lancera 1d4 de plus et l’ajoutera à son total.', 'heal');
   log('« Tu vas l’avoir, Sam ! » : +1d4 à son prochain jet.', 'is-buff');
-  await wait(500);
+  await pace();
 }
 
 // ---------- Tours ----------
@@ -795,6 +887,8 @@ async function heroTurn() {
   tokens();
   S.heroTurns++;
   S.suggest = S.heroTurns === 1 ? 'attack' : null;
+  clearTray('À vous de jouer');
+  trayExplain.textContent = 'Choisissez une action dans la barre du bas.';
 
   if (S.heroTurns === 1) {
     await hint('turn-1', 'Votre tour. Vous avez une action et une action bonus. Pour frapper : Attaquer, puis cliquez sur un rôdeur.');
@@ -815,10 +909,7 @@ async function heroTurn() {
     await a.run(target);
     if (checkEnd()) return;
     const left = heroActions().some((x) => x.cost === 'bonus' && !blockReason(x));
-    if (!S.action && !left) {
-      await wait(400);
-      break;
-    }
+    if (!S.action && !left) break;
   }
   lockActions();
   actionsEl.innerHTML = '';
@@ -838,37 +929,40 @@ async function samTurn() {
   const targets = liveZombies().sort((a, b) => a.pv - b.pv);
   if (!targets.length) return;
   const t = targets[0];
-  await wait(350);
+  const target = ca(t);
   const extra = [];
   if (sam.status.motivated) extra.push({ label: 'motivation', sides: 4 });
   if (sam.status.stim) extra.push({ label: 'stim', sides: 4 });
-  const r = await roll({ label: `Sam attaque ${t.name}`, adv: !!t.status.exposed, mod: SAM.attack, modLabel: '(attaque)', extra });
+  const r = await roll({ label: `Tour de Sam : il attaque ${t.name}`, adv: !!t.status.exposed, mod: SAM.attack, modLabel: 'Attaque de Sam', extra, against: target, againstLabel: 'CA' });
   delete sam.status.motivated;
   render(sam);
-  const hit = r.nat !== 1 && (r.nat === 20 || r.total >= ca(t));
+  const hit = r.nat !== 1 && (r.nat === 20 || r.total >= target);
   if (!hit) {
-    verdict(`${r.total} < CA ${ca(t)} : raté`, 'miss');
+    explain('Sam rate', versus(r.total, target, r.nat, `la CA de ${t.name}`), 'miss');
     sfx.miss();
     float(t, 'Raté', 'miss');
     log(`Sam attaque ${t.name} : ${r.total}, raté.`, 'is-miss');
-    await wait(700);
+    await pace();
     return;
   }
-  await wait(300);
-  const dmg = await roll({ label: 'Dégâts de Sam', count: SAM.dmg[0], sides: SAM.dmg[1], mod: SAM.dmgFlat, modLabel: '(Force)' });
-  verdict(`${dmg.total} dégâts`, 'hit');
-  log(`Sam touche ${t.name} : ${dmg.total} dégâts.`, 'is-hit');
+  explain('Sam touche', `${versus(r.total, target, r.nat, `la CA de ${t.name}`)} Sam lance ses dégâts.`, 'hit');
+  await pace();
+  const dmg = await roll({ label: r.nat === 20 ? 'Dégâts critiques de Sam' : 'Dégâts de Sam', count: SAM.dmg[0] * (r.nat === 20 ? 2 : 1), sides: SAM.dmg[1], mod: SAM.dmgFlat, modLabel: 'Force' });
+  const before = t.pv;
   damage(t, dmg.total);
-  await wait(700);
+  explain(`${dmg.total} dégâts`, `${t.name} passe de ${before} à ${t.pv} PV.${alive(t) ? '' : ' Il tombe.'}`, 'hit');
+  log(`Sam touche ${t.name} : ${dmg.total} dégâts.`, 'is-hit');
+  await pace();
 }
 
 async function zombieTurn(z) {
   if (z.status.immobilized) {
     delete z.status.immobilized;
     render(z);
-    verdict(`${z.name} se débat dans le piège`, 'miss');
+    clearTray(`Tour de ${z.name}`);
+    explain('Coincé', `${z.name} se débat dans le piège et perd son tour.`, 'miss');
     log(`${z.name} reste coincé dans le piège : il perd son tour.`, 'is-buff');
-    await wait(900);
+    await pace();
     return;
   }
   const h = S.hero;
@@ -881,37 +975,36 @@ async function zombieTurn(z) {
     t = pool.length ? pool[Math.random() < 0.55 || pool.length === 1 ? 0 : 1] : h;
   }
   z.status.distracted = t !== h;
-  await wait(350);
   if (Math.random() < 0.5) audio.growl();
+  const target = ca(t);
   const attacks = t === h ? 'vous attaque' : `attaque ${t.name}`;
-  const r = await roll({ label: `${z.name} ${attacks}`, mod: ZOMBIE.attack, modLabel: '(morsure)' });
-  const hit = r.nat !== 1 && (r.nat === 20 || r.total >= ca(t));
-  if (t === h && !S.tips.has('enemy-attack')) {
-    await hint('enemy-attack', `Il vous attaque : son d20 + ${ZOMBIE.attack} contre votre CA de ${ca(h)}. Plus votre CA est haute, plus il rate.`);
-  }
+  const r = await roll({ label: `Tour de ${z.name} : il ${attacks}`, mod: ZOMBIE.attack, modLabel: 'Morsure', against: target, againstLabel: t === h ? 'Votre CA' : `CA de ${t.name}` });
+  const hit = r.nat !== 1 && (r.nat === 20 || r.total >= target);
+  if (t === h) hint('enemy-attack', `Il vous attaque : son d20 + ${ZOMBIE.attack} contre votre CA de ${target}. Plus votre CA est haute, plus il rate.`);
+  const threshold = t === h ? 'votre CA' : `la CA de ${t.name}`;
   if (!hit) {
-    verdict(`${r.total} < CA ${ca(t)} : raté`, 'miss');
+    explain(t === h ? 'Esquivé' : 'Il rate', versus(r.total, target, r.nat, threshold), 'miss');
     sfx.miss();
     float(t, 'Esquivé', 'miss');
-    log(`${z.name} ${attacks} : ${r.total} contre CA ${ca(t)}, raté.`, 'is-miss');
+    log(`${z.name} ${attacks} : ${r.total} contre CA ${target}, raté.`, 'is-miss');
+    await pace();
   } else {
-    await wait(300);
-    const dmg = await roll({ label: `Morsure de ${z.name}`, count: ZOMBIE.dmg[0], sides: ZOMBIE.dmg[1], mod: ZOMBIE.dmgFlat, modLabel: '(Force)' });
-    verdict(`${dmg.total} dégâts`, 'bad');
-    log(`${z.name} mord ${t === h ? 'vous' : t.name} : <b>${dmg.total} dégâts</b>.`, 'is-bad');
+    explain(t === h ? 'Il vous touche' : `Il touche ${t.name}`, `${versus(r.total, target, r.nat, threshold)} Il lance ses dégâts.`, 'bad');
+    await pace();
+    const dmg = await roll({ label: r.nat === 20 ? `Morsure critique de ${z.name}` : `Morsure de ${z.name}`, count: ZOMBIE.dmg[0] * (r.nat === 20 ? 2 : 1), sides: ZOMBIE.dmg[1], mod: ZOMBIE.dmgFlat, modLabel: 'Force' });
+    const before = t.pv;
     damage(t, dmg.total);
+    explain(`${dmg.total} dégâts`, `${t === h ? 'Vous passez' : `${t.name} passe`} de ${before} à ${t.pv} PV.${alive(t) ? '' : t === h ? ' Vous tombez.' : ' Il tombe.'}`, 'bad');
+    log(`${z.name} mord ${who(t)} : <b>${dmg.total} dégâts</b>.`, 'is-bad');
     if (t === S.sam && !alive(S.sam)) {
-      await hint('sam-down', S.cls.id === 'medecin'
+      hint('sam-down', S.cls.id === 'medecin'
         ? 'Sam est à terre ! Stabiliser le relève à 1 PV, ou le kit de soin le remet sur pied.'
         : 'Sam est à terre. Il ne se battra plus. Finissez-en vite.');
     }
+    await pace();
   }
-  if (z.status.provoked) {
-    delete z.status.provoked;
-    render(z);
-  }
+  if (z.status.provoked) delete z.status.provoked;
   render(z);
-  await wait(800);
 }
 
 function checkEnd() {
@@ -952,10 +1045,8 @@ async function start(id) {
   actionsEl.innerHTML = '';
   orderEl.innerHTML = '';
   coachText.textContent = '';
-  trayLabel.textContent = 'En attente du contact';
-  trayFormula.textContent = '';
-  trayVerdict.textContent = '';
-  dieAlt.textContent = '';
+  continueBtn.hidden = true;
+  clearTray('En attente du contact');
   alliesEl.append(card(S.hero), card(S.sam));
   S.zombies.forEach((z) => { card(z); z.el.classList.add('is-hidden'); enemiesEl.appendChild(z.el); });
   tokens();
@@ -963,6 +1054,7 @@ async function start(id) {
 
   await say('Ici le Capitaine Trevor. Avant le vrai, on s’entraîne. Simulation de combat, niveau un.', { next: true });
   await say(`Votre fiche : ${BASE.pv} points de vie, une CA de ${S.hero.ca} et une jauge de fatigue qui monte jusqu’à ${BASE.fatigueMax}. La CA, c’est ce qu’un ennemi doit atteindre avec son d20 pour vous toucher.`, { next: true });
+  await say('Chaque jet s’affiche au centre : le dé, ce qu’on ajoute, le total, et le seuil à atteindre. Prenez le temps de lire, puis cliquez sur Continuer.', { next: true });
   await say('Avec vous, Sam, un civil. Il se bat mal, mais il se bat. Gardez-le en vie.', { next: true });
   await prepare();
 
@@ -975,7 +1067,7 @@ async function start(id) {
   audio.stinger(0.5);
   log('Deux rôdeurs sortent de l’ombre.', 'is-bad');
   if (S.trap) await springTrap();
-  await say(`Contact. Deux rôdeurs en face : CA ${ZOMBIE.ca}, ${ZOMBIE.pv} points de vie chacun.`, { next: true, label: 'En position' });
+  await say(`Contact. Deux rôdeurs en face : CA ${ZOMBIE.ca}, ${ZOMBIE.pv} points de vie chacun. Pour les toucher, il faudra faire ${ZOMBIE.ca} ou plus.`, { next: true, label: 'En position' });
 
   await initiative();
   await fight();
@@ -996,17 +1088,18 @@ async function prepare() {
     await say(`Vous avez le temps de vous cacher. Tapi dans l'arbre : jet de Dextérité avec avantage contre DD ${RULES.hideDD}.`);
     const ok = await ask('Se cacher', 'Réussi, vous commencez caché : ils ne vous verront pas venir.', 'Se cacher', 'Rester à découvert');
     if (ok) {
-      const r = await roll({ label: `Se cacher : Dextérité DD ${RULES.hideDD}`, adv: true, mod: mod(S.hero, 'DEX'), modLabel: '(Dextérité)', user: true });
+      const r = await roll({ label: `Se cacher : Dextérité contre DD ${RULES.hideDD}`, adv: true, mod: mod(S.hero, 'DEX'), modLabel: 'Dextérité', user: true, against: RULES.hideDD, againstLabel: 'DD' });
       if (r.total >= RULES.hideDD) {
         S.hero.status.hidden = true;
-        verdict(`${r.total} ≥ DD ${RULES.hideDD} : caché`, 'hit');
+        explain('Caché', `${r.total} atteint le DD ${RULES.hideDD} : personne ne vous a vu. Votre première attaque aura l'avantage, et l'attaque sournoise sera possible.`, 'hit');
         log(`Vous vous cachez (${r.total}).`, 'is-buff');
       } else {
-        verdict(`${r.total} < DD ${RULES.hideDD} : repéré`, 'miss');
+        explain('Repéré', `${r.total} est en dessous du DD ${RULES.hideDD} : pas de cachette assez sûre.`, 'miss');
         log(`Vous ne trouvez pas de cachette (${r.total}).`, 'is-miss');
       }
       render(S.hero);
-      await say('L’avantage : deux d20, on garde le meilleur. Votre compétence vous le donne pour vous cacher.', { next: true });
+      hint('advantage', 'L’avantage : on lance deux d20 et on garde le meilleur. Votre compétence vous le donne pour vous cacher.');
+      await pace();
     }
   } else if (c.id === 'policier') {
     await say(`Bouclier anti-émeute en main : CA ${c.ca} + ${c.caBonus} = ${S.hero.ca}. Vous êtes le plus dur à toucher du groupe.`, { next: true });
@@ -1022,27 +1115,33 @@ async function springTrap() {
   await wait(700);
   z.status.immobilized = true;
   const r = await roll({ label: `Le piège se referme sur ${z.name}`, sides: 4 });
-  verdict(`${r.total} dégâts, immobilisé`, 'hit');
-  log(`Le piège se referme sur ${z.name} : ${r.total} dégâts, il perd son prochain tour.`, 'is-hit');
+  const before = z.pv;
   damage(z, r.total);
+  explain(`${r.total} dégâts`, `${z.name} passe de ${before} à ${z.pv} PV, et reste coincé : il perdra son prochain tour.`, 'hit');
+  log(`Le piège se referme sur ${z.name} : ${r.total} dégâts, il perd son prochain tour.`, 'is-hit');
+  await pace();
 }
 
 async function initiative() {
   await say('Initiative : chacun lance un d20 et ajoute sa Dextérité. Le plus haut agit en premier. À vous de lancer.');
   const all = [S.hero, S.sam, ...S.zombies];
-  const me = await roll({ label: 'Votre initiative', mod: mod(S.hero, 'DEX'), modLabel: '(Dextérité)', user: true });
+  const me = await roll({ label: 'Votre initiative', mod: mod(S.hero, 'DEX'), modLabel: 'Dextérité', user: true });
   S.hero.init = me.total;
+  explain(`Initiative ${me.total}`, 'Pas de seuil à atteindre ici : on compare juste les totaux. Les autres lancent à leur tour.', 'hit');
+  await pace();
   for (const u of all.slice(1)) {
-    await wait(250);
-    const r = await roll({ label: `Initiative : ${u.name}`, mod: mod(u, 'DEX'), modLabel: '(Dextérité)' });
+    const r = await roll({ label: `Initiative de ${u.name}`, mod: mod(u, 'DEX'), modLabel: 'Dextérité' });
     u.init = r.total;
+    await wait(speed === 'fast' ? 300 : 700);
   }
   S.order = all.filter((u) => u.side !== 'enemy' || alive(u)).sort((a, b) => b.init - a.init || (a.side === 'hero' ? -1 : 1));
   S.round = 1;
   renderOrder();
   log(`Ordre du tour : ${S.order.map((u) => `${u.name} (${u.init})`).join(', ')}.`);
-  verdict(`Vous jouez en ${S.order.indexOf(S.hero) + 1}${S.order.indexOf(S.hero) ? 'e' : 'er'}`, 'hit');
-  await say('Voilà l’ordre. Il reste le même jusqu’à la fin du combat.', { next: true, label: 'Au combat' });
+  const rank = S.order.indexOf(S.hero) + 1;
+  clearTray('Ordre du tour');
+  explain(`Vous jouez ${rank === 1 ? 'en premier' : `en ${rank}e`}`, `Ordre : ${S.order.map((u) => `${u === S.hero ? 'vous' : u.name} (${u.init})`).join(', ')}. Il reste le même jusqu’à la fin du combat.`, 'hit');
+  await say('Voilà l’ordre, affiché en haut du plateau. Il reste le même jusqu’à la fin du combat.', { next: true, label: 'Au combat' });
 }
 
 async function fight() {
