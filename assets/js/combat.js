@@ -638,7 +638,7 @@ function heroActions() {
       id: 'diversion', label: 'Diversion', cost: 'action',
       desc: `DD ${RULES.diversionDD} Sagesse, sur les créatures à plus de ${RULES.diversionInt} en Intelligence.`,
       check: () => `Les rôdeurs ont ${ZOMBIE.intScore} en Intelligence : la Diversion n'a aucun effet sur eux.`,
-      run: async () => {},
+      run: async () => { },
     }, {
       id: 'motivate', label: 'Motivation', cost: 'bonus', fatigue: 1,
       desc: 'Sam ajoute 1d4 à son prochain jet.',
@@ -1085,7 +1085,7 @@ async function prepare() {
       log('Vous posez un piège dans le couloir (+1 fatigue).', 'is-buff');
     }
   } else if (c.id === 'voleur') {
-    await say(`Vous avez le temps de vous cacher. Tapi dans l'arbre : jet de Dextérité avec avantage contre DD ${RULES.hideDD}.`);
+    await say(`Vous avez le temps de vous cacher. Tapi dans l'ombre : jet de Dextérité avec avantage contre DD ${RULES.hideDD}.`);
     const ok = await ask('Se cacher', 'Réussi, vous commencez caché : ils ne vous verront pas venir.', 'Se cacher', 'Rester à découvert');
     if (ok) {
       const r = await roll({ label: `Se cacher : Dextérité contre DD ${RULES.hideDD}`, adv: true, mod: mod(S.hero, 'DEX'), modLabel: 'Dextérité', user: true, against: RULES.hideDD, againstLabel: 'DD' });

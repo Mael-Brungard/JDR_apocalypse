@@ -39,7 +39,7 @@ export const CLASSES = [
     pitch: 'Personne ne vous voit arriver. Surtout pas eux.',
     skills: [
       { name: 'Attaque sournoise', cost: 1, text: '+1d6 dégâts si la cible est distraite ou ne le voit pas.' },
-      { name: "Tapi dans l'arbre", text: "Avantage au jet de Dextérité pour passer d'une cachette à une autre." },
+      { name: "Tapi dans l'ombre", text: "Avantage au jet de Dextérité pour passer d'une cachette à une autre." },
     ],
     inventory: [{ name: 'Couteau', detail: '1d4 + Dextérité' }],
   },
