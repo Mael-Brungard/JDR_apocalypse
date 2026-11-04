@@ -4,7 +4,7 @@ Site immersif de la campagne de JDR (apocalypse zombie, 2039), en quatre pages :
 
 - `index.html` : l'accueil. Écran d'avertissement (maintenir pour entrer), rue en 3D éclairée à la lampe torche, fragments d'ambiance, puis les portes vers les autres pages.
 - `histoire.html` : le synopsis complet, à lire d'une traite. La caméra suit le récit : la rue, la foule, les portiques, l'héliport, le décollage.
-- `personnage.html` : les six classes (dossiers interactifs), l'interrogatoire pour choisir et l'inscription sur le Google Sheet.
+- `personnage.html` : les six classes (dossiers interactifs), l'interrogatoire pour choisir, le carnet du survivant (histoire, apparence, test d'alignement) et l'inscription sur le Google Sheet.
 - `entrainement.html` : la simulation de combat. Le joueur choisit une classe et joue un combat guidé par le Capitaine Trevor contre deux rôdeurs, avec Sam, un civil allié.
 
 Site statique, sans étape de build. Les bibliothèques viennent d'un CDN : Three.js (3D), GSAP + ScrollTrigger (animations), Lenis (défilement doux). Tous les sons sont synthétisés dans le navigateur (Web Audio), sans fichier audio.
@@ -20,6 +20,7 @@ Le lien actuel ouvre la feuille en modification (`/edit?usp=sharing`) : ses droi
 - Texte de l'histoire : `histoire.html`, un paragraphe par balise `<p class="s-p">`.
 - Classes (stats, compétences, inventaire) : `assets/js/classes.js`, partagé par la page perso et la simulation.
 - Questions de l'interrogatoire : tableau `QUESTIONS` dans `assets/js/perso.js`.
+- Carnet du survivant : `assets/js/carnet.js`. Les questions sont dans `CHAPTERS` (texte, exemple de réponse, « Pour le MJ »), le test d'alignement dans `ALIGN_TEST` (chaque réponse ajoute des points sur l'axe des règles et sur celui de la morale). Les réponses restent dans le navigateur du joueur, qui les copie ou les télécharge pour le MJ.
 - Règles de la simulation de combat : en haut de `assets/js/combat.js` (`RULES`, `WEAPONS`, `ZOMBIE`, `SAM`). Ce sont des valeurs d'entraînement qui complètent le document de règles : bonus de Maîtrise, armes de fortune, statistiques des rôdeurs et de Sam.
 - Couleurs et polices : bloc `:root` en haut de `assets/css/main.css`.
 - La ville 3D (points de vue, lumières, foule) : `assets/js/world.js`.

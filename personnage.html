@@ -17,6 +17,7 @@
 <script defer src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/ScrollTrigger.min.js"></script>
 <script defer src="https://cdn.jsdelivr.net/npm/lenis@1.1.13/dist/lenis.min.js"></script>
 <script type="module" src="assets/js/perso.js"></script>
+<script type="module" src="assets/js/carnet.js"></script>
 </head>
 <body class="page-perso">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
@@ -54,6 +55,7 @@
     <div class="p-actions">
       <a class="btn btn--blood" href="#dossiers">Ouvrir les dossiers <span class="arrow" aria-hidden="true">→</span></a>
       <a class="btn" href="#interrogatoire">Je ne sais pas quoi choisir</a>
+      <a class="btn" href="#carnet">Écrire son histoire</a>
       <a class="btn" href="#inscription">S'inscrire</a>
     </div>
   </section>
@@ -105,6 +107,27 @@
       <div class="q-top"><span id="q-step">Question 1 / 5</span><span>Sujet non identifié</span></div>
       <div class="q-bar"><i id="q-bar"></i></div>
       <div class="q-body" id="q-body" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="wrap carnet" id="carnet" aria-labelledby="carnet-title" data-view="checkpoint">
+    <div class="section-head">
+      <h2 id="carnet-title">Le carnet<br>du survivant</h2>
+      <p>Avant l'entretien d'admission, répondez à ces questions. Il n'y a pas de mauvaise réponse : elles aident le MJ à tisser la campagne autour de votre personnage.</p>
+    </div>
+    <div class="c-tabs" role="tablist" aria-label="Chapitres du carnet" id="c-tabs"></div>
+    <div id="c-panels"></div>
+    <div class="c-export">
+      <div>
+        <p class="c-export-title">Transmettre au MJ</p>
+        <p class="c-export-text">Vos réponses restent sur cet appareil, même si vous fermez la page. Quand vous avez fini, copiez-les pour le MJ ou collez-les dans le Google Sheet, à côté de votre nom.</p>
+        <p class="c-status mono" id="c-status" aria-live="polite"></p>
+      </div>
+      <div class="c-export-btns">
+        <button class="btn btn--blood" id="c-copy" type="button">Copier mes réponses</button>
+        <button class="btn" id="c-download" type="button">Télécharger (.txt)</button>
+        <button class="btn c-reset" id="c-reset" type="button">Tout effacer</button>
+      </div>
     </div>
   </section>
 
