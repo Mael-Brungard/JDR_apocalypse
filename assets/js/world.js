@@ -963,7 +963,7 @@ export async function createWorld(canvas, opts = {}) {
       const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 2), zmat);
       m.customDepthMaterial = depth;
       m.castShadow = !LOW;
-      const z = { mesh: m, home: new THREE.Vector3((r() - 0.5) * 13, 1, -8 - r() * 120), phase: r() * 10, lit: 0, mode: 'idle', t: 0, speed: 0.15 + r() * 0.25, dir: r() < 0.5 ? -1 : 1 };
+      const z = { mesh: m, home: new THREE.Vector3((r() - 0.5) * 13, 1, -8 - r() * 120), phase: r() * 10, speed: 0.15 + r() * 0.25, dir: r() < 0.5 ? -1 : 1 };
       m.position.copy(z.home);
       scene.add(m);
       zombies.push(z);
@@ -1019,13 +1019,12 @@ export async function createWorld(canvas, opts = {}) {
   let liftoff = false;
   const raycaster = new THREE.Raycaster();
   const ndc = new THREE.Vector2();
-  const right = new THREE.Vector3(), up = new THREE.Vector3(), fwd = new THREE.Vector3();
+  const right = new THREE.Vector3(), up = new THREE.Vector3();
   const torchGoal = new THREE.Vector3(0, 1, -20);
 
   const api = {
     scene, camera,
     onLightning: null,
-    onLunge: null,
     view(a, b = a, t = 0) {
       const A = resolve(a), B = resolve(b);
       goal.pos.copy(tmpA.set(...A.pos)).lerp(tmpB.set(...B.pos), t);
@@ -1123,7 +1122,6 @@ export async function createWorld(canvas, opts = {}) {
     camera.updateMatrixWorld();
 
     // Lampe torche : elle suit le pointeur, ou erre seule.
-    fwd.set(0, 0, -1).applyQuaternion(camera.quaternion);
     if (o.flashlight === 'mouse' && pointer.active) ndc.set(pointer.x, pointer.y);
     else ndc.set(Math.sin(t * 0.23) * 0.55 + Math.sin(t * 0.61) * 0.15, Math.sin(t * 0.31) * 0.25 - 0.15);
     raycaster.setFromCamera(ndc, camera);
@@ -1210,45 +1208,16 @@ export async function createWorld(canvas, opts = {}) {
 
     ashMat.uniforms.uCam.value.copy(camera.position);
 
-    // Infectés : ils titubent, et se jettent sur vous si vous les fixez trop longtemps.
+    // Infectés : ils titubent au loin et repartent plus loin avant d'arriver trop près.
     zombies.forEach((z) => {
       const m = z.mesh;
-      if (z.mode === 'idle') {
-        z.home.x += Math.sin(t * 0.3 + z.phase) * dt * z.speed * z.dir;
-        z.home.z += dt * z.speed * 0.6;
-        if (z.home.z > camera.position.z + 2 || z.home.z < camera.position.z - 140) {
-          z.home.set((Math.random() - 0.5) * 13, 1, camera.position.z - 30 - Math.random() * 70);
-        }
-        m.position.set(z.home.x + Math.sin(t * 1.4 + z.phase) * 0.08, 1 + Math.abs(Math.sin(t * 1.4 + z.phase)) * 0.04, z.home.z);
-        m.rotation.set(0, Math.atan2(camera.position.x - m.position.x, camera.position.z - m.position.z), Math.sin(t * 1.4 + z.phase) * 0.06);
-        const toZ = tmpA.copy(m.position).sub(torch.position);
-        const dist = toZ.length();
-        const aim = toZ.normalize().dot(tmpB.copy(torchGoal).sub(torch.position).normalize());
-        if (!REDUCED && torch.intensity > 50 && dist < 24 && aim > 0.97) z.lit += dt;
-        else z.lit = Math.max(0, z.lit - dt * 0.5);
-        if (z.lit > 0.9 && !api.lungeLock) {
-          z.mode = 'lunge';
-          z.t = 0;
-          z.from = m.position.clone();
-          api.lungeLock = true;
-          api.onLunge?.();
-          api.shake(0.35);
-          api.red(0.9);
-        }
-      } else {
-        z.t += dt;
-        const target = tmpA.copy(camera.position).addScaledVector(fwd, 1.6);
-        target.y = 1.15;
-        const p = Math.min(z.t / 0.32, 1);
-        m.position.lerpVectors(z.from, target, p * p);
-        m.rotation.y = Math.atan2(camera.position.x - m.position.x, camera.position.z - m.position.z);
-        if (z.t > 0.7) {
-          z.mode = 'idle';
-          z.lit = 0;
-          z.home.set((Math.random() - 0.5) * 13, 1, camera.position.z - 50 - Math.random() * 60);
-          setTimeout(() => { api.lungeLock = false; }, 9000);
-        }
+      z.home.x += Math.sin(t * 0.3 + z.phase) * dt * z.speed * z.dir;
+      z.home.z += dt * z.speed * 0.6;
+      if (z.home.z > camera.position.z - 8 || z.home.z < camera.position.z - 140) {
+        z.home.set((Math.random() - 0.5) * 13, 1, camera.position.z - 30 - Math.random() * 70);
       }
+      m.position.set(z.home.x + Math.sin(t * 1.4 + z.phase) * 0.08, 1 + Math.abs(Math.sin(t * 1.4 + z.phase)) * 0.04, z.home.z);
+      m.rotation.set(0, Math.atan2(camera.position.x - m.position.x, camera.position.z - m.position.z), Math.sin(t * 1.4 + z.phase) * 0.06);
     });
 
     tickers.forEach((fn) => fn(dt, t));

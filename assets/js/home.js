@@ -36,7 +36,6 @@ createWorld(document.getElementById('world'), { zombies: true, flashlight: 'mous
   .then((w) => {
     world = w;
     world.onLightning = () => audio.thunder(0.5 + Math.random() * 1.6);
-    world.onLunge = () => { audio.growl(); audio.stinger(0.7); };
     followScroll(world, document.querySelectorAll('[data-view]'));
   })
   .catch((err) => console.error('Monde 3D indisponible :', err));
