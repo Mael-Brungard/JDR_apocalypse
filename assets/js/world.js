@@ -8,7 +8,7 @@ import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js'
 import { ShaderPass } from 'three/addons/postprocessing/ShaderPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
-export const LOW = matchMedia('(max-width: 760px), (pointer: coarse)').matches;
+export const MOBILE = matchMedia('(max-width: 760px), (pointer: coarse)').matches;
 const REDUCED = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const FOG = 0x221210;
 
@@ -446,7 +446,11 @@ const horrorShader = {
 // ---------- Monde ----------
 
 export async function createWorld(canvas, opts = {}) {
-  const o = { zombies: false, flashlight: 'mouse', view: 'street', ...opts };
+  const o = { zombies: false, flashlight: 'mouse', view: 'street', quality: 'high', ...opts };
+  // Qualité basse : sur téléphone, et sur les pages où la ville n'est qu'un décor derrière
+  // beaucoup de contenu. Pas d'ombres ni de halo, une résolution réduite et 30 images/s.
+  const LOW = MOBILE || o.quality === 'low';
+  const BACKDROP = o.quality === 'low';
   await Promise.race([
     Promise.all([
       document.fonts.load('80px "Rubik Wet Paint"'),
@@ -457,7 +461,7 @@ export async function createWorld(canvas, opts = {}) {
 
   const r = seeded(2039);
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: !LOW, powerPreference: 'high-performance' });
-  renderer.setPixelRatio(Math.min(devicePixelRatio, LOW ? 1 : 1.5));
+  renderer.setPixelRatio(Math.min(devicePixelRatio, LOW ? 1 : 1.5) * (BACKDROP ? 0.7 : 1));
   renderer.setSize(innerWidth, innerHeight, false);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.15;
@@ -468,7 +472,7 @@ export async function createWorld(canvas, opts = {}) {
   scene.background = new THREE.Color(FOG);
   scene.fog = new THREE.FogExp2(FOG, VIEWS[o.view].fog);
 
-  const camera = new THREE.PerspectiveCamera(LOW ? 70 : 60, innerWidth / innerHeight, 0.1, 700);
+  const camera = new THREE.PerspectiveCamera(MOBILE ? 70 : 60, innerWidth / innerHeight, 0.1, 700);
   scene.add(camera);
 
   const time = { value: 0 };
@@ -1223,10 +1227,16 @@ export async function createWorld(canvas, opts = {}) {
     tickers.forEach((fn) => fn(dt, t));
   }
 
+  // En décor, une image sur deux suffit : on cumule le temps jusqu'à ~1/30 s.
+  const frameBudget = BACKDROP ? 1 / 32 : 0;
+  let pending = 0;
   function loop() {
     if (!running) return;
     requestAnimationFrame(loop);
-    const dt = Math.min(clock.getDelta(), 0.05);
+    pending += clock.getDelta();
+    if (pending < frameBudget) return;
+    const dt = Math.min(pending, 0.05);
+    pending = 0;
     update(dt);
     composer.render();
   }

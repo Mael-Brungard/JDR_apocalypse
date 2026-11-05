@@ -7,7 +7,7 @@ const { gsap } = window;
 initCore({ ambient: { drone: 0.8, wind: 0.8 } });
 
 let world = null;
-createWorld(document.getElementById('world'), { zombies: true, flashlight: 'drift', view: 'street2' })
+createWorld(document.getElementById('world'), { zombies: true, flashlight: 'drift', view: 'street2', quality: 'low' })
   .then((w) => {
     world = w;
     world.onLightning = () => audio.thunder(0.6 + Math.random() * 1.5);
